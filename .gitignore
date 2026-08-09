@@ -1,0 +1,12 @@
+# Visual Studio
+.vs/
+*.sln
+
+# Unreal Engine
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Dev File
+Content/Dev/
