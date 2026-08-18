@@ -8,5 +8,6 @@ DerivedDataCache/
 Intermediate/
 Saved/
 
-# Dev File
-Content/Dev/
+# 게임 콘텐츠 파일만 git LFS에 올림
+Content/*
+!Content/ProjectFl/
