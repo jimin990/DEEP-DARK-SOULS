@@ -12,10 +12,12 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Player/FLPlayerController.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 
 AFLCharacterPlayer::AFLCharacterPlayer()
 {
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
+	GetCapsuleComponent()->InitCapsuleSize(40.f, 96.f);
 
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -128,4 +130,15 @@ void AFLCharacterPlayer::DoJumpEnd()
 void AFLCharacterPlayer::Attack()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Attack!"));
+
+	if (!AttackMontage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AttackMontage is null!"));
+		return;
+	}
+
+	if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+	{
+		AnimInst->Montage_Play(AttackMontage);
+	}
 }
