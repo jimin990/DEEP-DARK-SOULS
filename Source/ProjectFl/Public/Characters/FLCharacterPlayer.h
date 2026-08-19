@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Characters/FLCharacterBase.h"
 #include "InputActionValue.h"
+#include "GameplayTagContainer.h"
 #include "FLCharacterPlayer.generated.h"
 
 class UCameraComponent;
@@ -65,4 +66,9 @@ protected:
 protected:
 	UPROPERTY(EditAnywhere, Category = "Montage")
 	TObjectPtr<UAnimMontage> AttackMontage;
+
+	//GAS
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS|Input")
+	FGameplayTag InputTag;
 };

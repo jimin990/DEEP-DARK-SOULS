@@ -18,26 +18,16 @@ public class ProjectFl : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
-			"Slate"
-		});
+			"Slate",
+            "GameplayAbilities",
+			"GameplayTags",
+			"GameplayTasks"
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
 		PublicIncludePaths.AddRange(new string[] {
-			"ProjectFl",
-			"ProjectFl/Variant_Platforming",
-			"ProjectFl/Variant_Platforming/Animation",
-			"ProjectFl/Variant_Combat",
-			"ProjectFl/Variant_Combat/AI",
-			"ProjectFl/Variant_Combat/Animation",
-			"ProjectFl/Variant_Combat/Gameplay",
-			"ProjectFl/Variant_Combat/Interfaces",
-			"ProjectFl/Variant_Combat/UI",
-			"ProjectFl/Variant_SideScrolling",
-			"ProjectFl/Variant_SideScrolling/AI",
-			"ProjectFl/Variant_SideScrolling/Gameplay",
-			"ProjectFl/Variant_SideScrolling/Interfaces",
-			"ProjectFl/Variant_SideScrolling/UI"
+			"ProjectFl"
 		});
 
 		// Uncomment if you are using Slate UI

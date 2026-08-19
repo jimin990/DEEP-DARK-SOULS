@@ -2,9 +2,6 @@
 
 
 #include "Characters/FLCharacterPlayer.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "InputAction.h"
@@ -14,21 +11,13 @@
 #include "Player/FLPlayerController.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
+#include "AbilitySystemComponent.h"
 
 AFLCharacterPlayer::AFLCharacterPlayer()
 {
-	GetCapsuleComponent()->InitCapsuleSize(40.f, 96.f);
-
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-
-	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -90.f));
-	GetMesh()->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
-
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(GetRootComponent());
 	SpringArmComponent->SetRelativeLocation(FVector(0.f, 0.f, 50.f)); // 머리 높이
-
 
 	SpringArmComponent->TargetArmLength = 300.f;
 	SpringArmComponent->bUsePawnControlRotation = true;
@@ -131,14 +120,14 @@ void AFLCharacterPlayer::Attack()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Attack!"));
 
-	if (!AttackMontage)
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!ASC || !InputTag.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AttackMontage is null!"));
 		return;
 	}
 
-	if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
-	{
-		AnimInst->Montage_Play(AttackMontage);
-	}
+	FGameplayTagContainer TagContainer;
+	TagContainer.AddTag(InputTag);
+
+	ASC->TryActivateAbilitiesByTag(TagContainer);
 }
