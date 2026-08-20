@@ -63,10 +63,6 @@ protected:
 
 	void Attack();
 
-protected:
-	UPROPERTY(EditAnywhere, Category = "Montage")
-	TObjectPtr<UAnimMontage> AttackMontage;
-
 	//GAS
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS|Input")

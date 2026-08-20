@@ -11,6 +11,9 @@ class UAbilitySystemComponent;
 class UFLAttributeSet;
 class UGameplayEffect;
 class UGameplayAbility;
+class UStaticMesh;
+class UStaticMeshComponent;
+class UFLWeaponDataAsset;
 
 UCLASS()
 class PROJECTFL_API AFLCharacterBase : public ACharacter, public IAbilitySystemInterface
@@ -48,10 +51,33 @@ protected:
 	void GiveDefaultAbilities();
 
 public:
+	UPROPERTY(EditAnywhere, Category = "Montage")
+	TObjectPtr<UAnimMontage> AttackMontage;
+
+public:
 	virtual float TakeDamage(
 		float DamageAmount,
 		struct FDamageEvent const& DamageEvent,
 		class AController* EventInstigator,
 		AActor* DamageCauser
 	) override;
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Weapon")
+	TObjectPtr<UStaticMeshComponent> WeaponMeshComponent;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	float DefaultTraceRadius = 20.f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TObjectPtr<UFLWeaponDataAsset> WeaponData;
+
+	void EquipWeapon(UFLWeaponDataAsset* InWeaponData);
+
+public:
+	UPROPERTY(EditAnywhere, Category = "Combat|Trace")
+	FName DefaultTraceStartSocketName;
+
+	UPROPERTY(EditAnywhere, Category = "Combat|Trace")
+	FName DefaultTraceEndSocketName;
 };

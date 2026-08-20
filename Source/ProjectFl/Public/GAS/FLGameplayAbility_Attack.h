@@ -7,6 +7,8 @@
 #include "FLGameplayAbility_Attack.generated.h"
 
 class UGameplayEffect;
+class UAbilityTask_WaitGameplayEvent;
+class UAbilityTask_PlayMontageAndWait;
 
 UCLASS()
 class PROJECTFL_API UFLGameplayAbility_Attack : public UGameplayAbility
@@ -26,4 +28,29 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
+
+private:
+	UPROPERTY()
+	TSet<TObjectPtr<AActor>> HitActors;
+
+	UPROPERTY()
+	TObjectPtr<UAbilityTask_WaitGameplayEvent> TraceEventTask;
+
+	UPROPERTY()
+	TObjectPtr<UAbilityTask_PlayMontageAndWait> MontageTask;
+
+	UFUNCTION()
+	void AttackTrace(FGameplayEventData Payload);
+
+	UFUNCTION()
+	void OnAttackMontageCompleted();
+
+	UFUNCTION()
+	void OnAttackMontageInterrupted();
+
+	UFUNCTION()
+	void OnAttackMontageCancelled();
+
+public:
+	void ApplyDamageEffectToTarget(AActor* TargetActor);
 };

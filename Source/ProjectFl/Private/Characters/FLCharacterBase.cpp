@@ -9,6 +9,7 @@
 #include "GAS/FLAttributeSet.h"
 #include "GameplayEffect.h"
 #include "Abilities/GameplayAbility.h"
+#include "Weapons/FLWeaponDataAsset.h"
 
 // Sets default values
 AFLCharacterBase::AFLCharacterBase()
@@ -19,13 +20,16 @@ AFLCharacterBase::AFLCharacterBase()
 	GetCapsuleComponent()->InitCapsuleSize(40.f, 96.f);
 
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bOrientRotationToMovement = true;;
 
 	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -90.f));
 	GetMesh()->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AttributeSet = CreateDefaultSubobject<UFLAttributeSet>(TEXT("AttributeSet"));
+
+	WeaponMeshComponent =
+		CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 }
 
 // Called when the game starts or when spawned
@@ -39,6 +43,11 @@ void AFLCharacterBase::BeginPlay()
 	}
 
 	GiveDefaultAbilities();
+
+	if (WeaponData)
+	{
+		EquipWeapon(WeaponData);
+	}
 }
 
 // Called every frame
@@ -65,6 +74,24 @@ float AFLCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	return 0.0f;
+}
+
+// 무기 수정 필요 Interface로 빼던지 해야할듯
+void AFLCharacterBase::EquipWeapon(UFLWeaponDataAsset* InWeaponData)
+{
+	WeaponMeshComponent->SetStaticMesh(InWeaponData->WeaponMesh);
+
+	WeaponMeshComponent->AttachToComponent(
+		GetMesh(),
+		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+		DefaultTraceStartSocketName
+	);
+
+	WeaponMeshComponent->SetRelativeTransform(InWeaponData->AttachOffset);
+
+	DefaultTraceStartSocketName = WeaponData ->TraceStartSocketName;
+	DefaultTraceEndSocketName = WeaponData->TraceEndSocketName;
+	DefaultTraceRadius = WeaponData->TraceRadius;
 }
 
 void AFLCharacterBase::GiveDefaultAbilities()
