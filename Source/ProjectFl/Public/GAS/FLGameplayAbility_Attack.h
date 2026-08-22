@@ -18,6 +18,10 @@ class PROJECTFL_API UFLGameplayAbility_Attack : public UGameplayAbility
 	UFLGameplayAbility_Attack();
 
 public:
+	UPROPERTY(EditAnywhere, Category = "Montage")
+	TObjectPtr<UAnimMontage> AttackMontage;
+
+public:
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,

@@ -24,6 +24,12 @@ void UFLGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle
 
 	UE_LOG(LogTemp, Warning, TEXT("GA_Attack Activated"));
 
+	if (!AttackMontage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AttackMontage is null"));
+		return;
+	}
+
 	// 이벤트 등록
 	const FGameplayTag AttackTraceEventTag =
 		FGameplayTag::RequestGameplayTag(TEXT("Event.Attack.Trace"));
@@ -49,7 +55,7 @@ void UFLGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle
 	MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this,
 		NAME_None,
-		FLPlayer->AttackMontage,
+		AttackMontage,
 		1.f
 	);
 
@@ -129,18 +135,24 @@ void UFLGameplayAbility_Attack::AttackTrace(FGameplayEventData Payload)
 
 void UFLGameplayAbility_Attack::OnAttackMontageCompleted()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Trace Completed!!"));
+
 	HitActors.Reset();
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 }
 
 void UFLGameplayAbility_Attack::OnAttackMontageInterrupted()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Trace Interrupted!!"));
+
 	HitActors.Reset();
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }
 
 void UFLGameplayAbility_Attack::OnAttackMontageCancelled()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Trace Cancelled!!"));
+
 	HitActors.Reset();
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }

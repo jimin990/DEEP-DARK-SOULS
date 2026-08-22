@@ -23,6 +23,7 @@ void UFLPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		Velocity = MovementComp->Velocity;
 		GroundSpeed = Velocity.Size2D();
+
 		bIsIdle = GroundSpeed < 3.f && MovementComp->GetCurrentAcceleration() == FVector::ZeroVector;
 		bIsFalling = MovementComp->IsFalling();
 
