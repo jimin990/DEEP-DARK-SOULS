@@ -12,6 +12,9 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "AbilitySystemComponent.h"
+#include "GameplayTagContainer.h"
+#include "Abilities/GameplayAbilityTypes.h"
+#include "Input/FLInputConfigDataAsset.h"
 
 AFLCharacterPlayer::AFLCharacterPlayer()
 {
@@ -35,7 +38,7 @@ void AFLCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (!IMC || !MoveAction || !LookAction || !JumpAction || !AttackAction)
+	if (!IMC || !MoveAction || !LookAction || !DodgeAction || !AttackAction)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InputAsset is null!"));
 		return;
@@ -51,9 +54,30 @@ void AFLCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFLCharacterPlayer::Move);
 	EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFLCharacterPlayer::Look);
-	EIC->BindAction(JumpAction, ETriggerEvent::Started, this, &AFLCharacterPlayer::DoJumpStart);
-	EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &AFLCharacterPlayer::DoJumpEnd);
+	EIC->BindAction(DodgeAction, ETriggerEvent::Started, this, &AFLCharacterPlayer::Dodge);
 	EIC->BindAction(AttackAction, ETriggerEvent::Started, this, &AFLCharacterPlayer::Attack);
+
+	// InputConfig 를 읽고 태그를 인자로 사용하는 함수로 바인딩
+	/*
+	if (InputConfig)
+	{
+		for (const FFLInputActionTag& InputActionTag : InputConfig->AbilityInputActions)
+		{
+			if (!InputActionTag.InputAction || !InputActionTag.InputTag.IsValid())
+			{
+				continue;
+			}
+
+			EIC->BindAction(
+				InputActionTag.InputAction,
+				ETriggerEvent::Started,
+				this,
+				&AFLCharacterPlayer::AbilityInputPressed,
+				InputActionTag.InputTag
+			);
+		}
+	}
+	*/
 }
 
 void AFLCharacterPlayer::BeginPlay()
@@ -97,23 +121,17 @@ void AFLCharacterPlayer::Move(const FInputActionValue& Value)
 	const FVector Forward = FRotationMatrix(YawRot).GetUnitAxis(EAxis::X);
 	const FVector Right = FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y);
 
+	const FVector MoveDirection =
+		(Forward * Axis.Y + Right * Axis.X).GetSafeNormal();
+
+	if (!MoveDirection.IsNearlyZero())
+	{
+		LastMoveInputWorldDirection = MoveDirection;
+	}
+
 	AddMovementInput(Forward, Axis.Y);
 	AddMovementInput(Right, Axis.X);
 
-}
-
-void AFLCharacterPlayer::DoJumpStart()
-{
-	Jump();
-
-	UE_LOG(LogTemp, Warning, TEXT("Jump!"));
-}
-
-void AFLCharacterPlayer::DoJumpEnd()
-{
-	StopJumping();
-
-	UE_LOG(LogTemp, Warning, TEXT("Jump End!"));
 }
 
 void AFLCharacterPlayer::Attack()
@@ -121,13 +139,113 @@ void AFLCharacterPlayer::Attack()
 	UE_LOG(LogTemp, Warning, TEXT("Attack!"));
 
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	if (!ASC || !InputTag.IsValid())
+	if (!ASC || !AttackInputTag.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ASC or InputTag is invalid"));
+		return;
+	}
+
+	for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+	{
+		if (!Spec.DynamicAbilityTags.HasTagExact(AttackInputTag))
+		{
+			continue;
+		}
+
+		const bool bActivated = ASC->TryActivateAbility(Spec.Handle);
+
+		if (!bActivated)
+		{
+			const FGameplayTag ComboInputTag =
+				FGameplayTag::RequestGameplayTag(TEXT("Event.Attack.Input"));
+
+			FGameplayEventData EventData;
+			EventData.EventTag = ComboInputTag;
+			EventData.Instigator = this;
+			EventData.Target = this;
+
+			const int32 ActivatedCount =
+				ASC->HandleGameplayEvent(ComboInputTag, &EventData);
+
+			UE_LOG(
+				LogTemp,
+				Warning,
+				TEXT("Combo Input Event Sent / Count: %d"),
+				ActivatedCount
+			);
+		}
+
+		return;
+	}
+
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("Attack Ability not found by InputTag: %s"),
+		*AttackInputTag.ToString()
+	);
+}
+
+void AFLCharacterPlayer::Dodge()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Dodge!"));
+
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!ASC || !DodgeInputTag.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ASC or InputTag is invalid"));
+		return;
+	}
+
+	for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+	{
+		if (!Spec.DynamicAbilityTags.HasTagExact(DodgeInputTag))
+		{
+			continue;
+		}
+
+		const bool bActivated = ASC->TryActivateAbility(Spec.Handle);
+
+		return;
+	}
+}
+
+// 인풋 액션이랑 연결 만드는 중 
+void AFLCharacterPlayer::AbilityInputPressed(FGameplayTag InputTag)
+{
+	if (!InputTag.IsValid())
 	{
 		return;
 	}
 
-	FGameplayTagContainer TagContainer;
-	TagContainer.AddTag(InputTag);
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!ASC)
+	{
+		return;
+	}
 
-	ASC->TryActivateAbilitiesByTag(TagContainer);
+	for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+	{
+		if (!Spec.DynamicAbilityTags.HasTagExact(InputTag))
+		{
+			continue;
+		}
+
+		const bool bActivated = ASC->TryActivateAbility(Spec.Handle);
+
+		if (!bActivated && InputTag.MatchesTagExact(FGameplayTag::RequestGameplayTag(TEXT("Input.Attack"))))
+		{
+			const FGameplayTag ComboInputTag =
+				FGameplayTag::RequestGameplayTag(TEXT("Event.Attack.Input"));
+
+			FGameplayEventData EventData;
+			EventData.EventTag = ComboInputTag;
+			EventData.Instigator = this;
+			EventData.Target = this;
+
+			ASC->HandleGameplayEvent(ComboInputTag, &EventData);
+		}
+
+		return;
+	}
 }

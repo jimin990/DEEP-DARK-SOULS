@@ -43,8 +43,8 @@ void UFLBTService_UpdateCombatRange::TickNode(UBehaviorTreeComponent& OwnerComp,
 
 	//BB->SetValueAsInt(IsInCombatRangeKey.SelectedKeyName, Distance <= CombatRange ? 2 : 1);
 
-	UE_LOG(LogTemp, Warning, TEXT("Distance: %f / CombatRange: %f / AIState: %d"),
+	/*UE_LOG(LogTemp, Warning, TEXT("Distance: %f / CombatRange: %f / AIState: %d"),
 		Distance,
 		CombatRange,
-		AIState);
+		AIState);*/
 }

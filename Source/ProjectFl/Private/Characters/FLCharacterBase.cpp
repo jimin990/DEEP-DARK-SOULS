@@ -10,6 +10,8 @@
 #include "GameplayEffect.h"
 #include "Abilities/GameplayAbility.h"
 #include "Weapons/FLWeaponDataAsset.h"
+#include "Combat/FLCombatComponent.h"
+#include "Combat/FLAbilitySetPrimaryDataAsset.h"
 
 // Sets default values
 AFLCharacterBase::AFLCharacterBase()
@@ -25,11 +27,18 @@ AFLCharacterBase::AFLCharacterBase()
 	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -90.f));
 	GetMesh()->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
 
+	// Combat
+	CombatComponent = CreateDefaultSubobject<UFLCombatComponent>(TEXT("CombatComponent"));
+
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AttributeSet = CreateDefaultSubobject<UFLAttributeSet>(TEXT("AttributeSet"));
 
 	WeaponMeshComponent =
 		CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+
+	// 튀김 방지 - 추후 무기 클래스로 빼거나, 에셋설정으로 수정하자
+	WeaponMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WeaponMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 }
 
 // Called when the game starts or when spawned
@@ -43,11 +52,6 @@ void AFLCharacterBase::BeginPlay()
 	}
 
 	GiveDefaultAbilities();
-
-	if (WeaponData)
-	{
-		EquipWeapon(WeaponData);
-	}
 }
 
 // Called every frame
@@ -67,40 +71,44 @@ UAbilitySystemComponent* AFLCharacterBase::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
-// 무기 수정 필요 Interface로 빼던지 해야할듯
-void AFLCharacterBase::EquipWeapon(UFLWeaponDataAsset* InWeaponData)
-{
-	WeaponMeshComponent->SetStaticMesh(InWeaponData->WeaponMesh);
-
-	WeaponMeshComponent->AttachToComponent(
-		GetMesh(),
-		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		DefaultTraceStartSocketName
-	);
-
-	WeaponMeshComponent->SetRelativeTransform(InWeaponData->AttachOffset);
-
-	DefaultTraceStartSocketName = WeaponData ->TraceStartSocketName;
-	DefaultTraceEndSocketName = WeaponData->TraceEndSocketName;
-	DefaultTraceRadius = WeaponData->TraceRadius;
-}
-
 void AFLCharacterBase::GiveDefaultAbilities()
 {
-	if (!AbilitySystemComponent)
+	if (!AbilitySystemComponent || !AbilitySet)
 	{
 		return;
 	}
 
-	for (const TSubclassOf<UGameplayAbility>& AbilityClass : DefaultAbilities)
+	for (const FFLAbilitySetItem& AbilityItem : AbilitySet->Abilities)
 	{
-		if (!AbilityClass)
+		if (!AbilityItem.AbilityClass)
 		{
 			continue;
 		}
 
-		FGameplayAbilitySpec AbilitySpec(AbilityClass, 1);
+		FGameplayAbilitySpec AbilitySpec(
+			AbilityItem.AbilityClass,
+			AbilityItem.AbilityLevel
+		);
+
+		if (AbilityItem.ActivationTag.IsValid())
+		{
+			AbilitySpec.DynamicAbilityTags.AddTag(AbilityItem.ActivationTag);
+		}
+
 		AbilitySystemComponent->GiveAbility(AbilitySpec);
+
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("Give Ability: %s / Tag: %s"),
+			*AbilityItem.AbilityClass->GetName(),
+			*AbilityItem.ActivationTag.ToString()
+		);
 	}
+}
+
+UFLCombatComponent* AFLCharacterBase::GetCombatComponent() const
+{
+	return CombatComponent;
 }
 

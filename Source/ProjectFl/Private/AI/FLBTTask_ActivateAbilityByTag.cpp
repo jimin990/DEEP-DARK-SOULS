@@ -2,7 +2,6 @@
 
 
 #include "AI/FLBTTask_ActivateAbilityByTag.h"
-
 #include "AIController.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
@@ -43,18 +42,43 @@ EBTNodeResult::Type UFLBTTask_ActivateAbilityByTag::ExecuteTask(
 	FGameplayTagContainer TagContainer;
 	TagContainer.AddTag(AbilityTag);
 
-	const bool bActivated = CachedASC->TryActivateAbilitiesByTag(TagContainer);
+	//const bool bActivated = CachedASC->TryActivateAbilitiesByTag(TagContainer);
 
-	if (!bActivated)
+	for (const FGameplayAbilitySpec& Spec : CachedASC->GetActivatableAbilities())
+	{
+		if (Spec.DynamicAbilityTags.HasTagExact(AbilityTag))
+		{
+			const bool bActivated = CachedASC->TryActivateAbility(Spec.Handle);
+
+			if (!bActivated)
+			{
+				CachedASC->OnAbilityEnded.RemoveAll(this);
+				CachedASC = nullptr;
+				CachedOwnerComp = nullptr;
+
+				return EBTNodeResult::Failed;
+			}
+
+			break;
+		}
+	}
+
+	/*if (!bActivated)
 	{
 		CachedASC->OnAbilityEnded.RemoveAll(this);
 		CachedASC = nullptr;
 		CachedOwnerComp = nullptr;
 
 		return EBTNodeResult::Failed;
-	}
+	}*/
 
 	return EBTNodeResult::InProgress;
+}
+
+EBTNodeResult::Type UFLBTTask_ActivateAbilityByTag::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Task abort!"));
+	return EBTNodeResult::Failed;
 }
 
 void UFLBTTask_ActivateAbilityByTag::OnAbilityEnded(

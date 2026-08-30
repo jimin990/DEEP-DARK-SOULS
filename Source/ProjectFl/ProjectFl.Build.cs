@@ -21,7 +21,8 @@ public class ProjectFl : ModuleRules
 			"Slate",
             "GameplayAbilities",
 			"GameplayTags",
-			"GameplayTasks"
+			"GameplayTasks",
+            "Niagara"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

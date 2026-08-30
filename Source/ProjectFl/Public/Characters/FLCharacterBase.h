@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "InputActionValue.h"
 #include "FLCharacterBase.generated.h"
 
 class UAbilitySystemComponent;
@@ -14,6 +15,8 @@ class UGameplayAbility;
 class UStaticMesh;
 class UStaticMeshComponent;
 class UFLWeaponDataAsset;
+class UFLCombatComponent;
+class UFLAbilitySetPrimaryDataAsset;
 
 UCLASS()
 class PROJECTFL_API AFLCharacterBase : public ACharacter, public IAbilitySystemInterface
@@ -37,35 +40,38 @@ public:
 
 //Gameplay Ability System
 protected:
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS")
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UPROPERTY()
 	TObjectPtr<UFLAttributeSet> AttributeSet;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS|Abilities")
-	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
+	TObjectPtr<UFLAbilitySetPrimaryDataAsset> AbilitySet;
 
 	void GiveDefaultAbilities();
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
+	TObjectPtr<UAnimMontage> HitReactMontage;
 
 public:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 	TObjectPtr<UStaticMeshComponent> WeaponMeshComponent;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon")
-	float DefaultTraceRadius = 20.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	TObjectPtr<UFLCombatComponent> CombatComponent;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TObjectPtr<UFLWeaponDataAsset> WeaponData;
-
-	void EquipWeapon(UFLWeaponDataAsset* InWeaponData);
+	UFLCombatComponent* GetCombatComponent() const;
 
 public:
-	UPROPERTY(EditAnywhere, Category = "Combat|Trace")
-	FName DefaultTraceStartSocketName;
+	// 공격 중 들어온 방향을 위한 마지막 입력 방향 저장
+	FVector LastMoveInputWorldDirection = FVector::ZeroVector;
 
-	UPROPERTY(EditAnywhere, Category = "Combat|Trace")
-	FName DefaultTraceEndSocketName;
+	FVector GetLastMoveInputWorldDirection() const
+	{
+		return LastMoveInputWorldDirection;
+	}
 };

@@ -13,6 +13,7 @@ class USpringArmComponent;
 class UInputMappingContext;
 class UInputAction;
 class UAnimMontage;
+class UFLInputConfigDataAsset;
 
 UCLASS()
 class PROJECTFL_API AFLCharacterPlayer : public AFLCharacterBase
@@ -43,10 +44,10 @@ public:
 	TObjectPtr<UInputAction> LookAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> JumpAction;
+	TObjectPtr<UInputAction> AttackAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> AttackAction;
+	TObjectPtr<UInputAction> DodgeAction;
 
 protected:
 	// Called when the game starts or when spawned
@@ -57,14 +58,20 @@ protected:
 
 	void Move(const FInputActionValue& Value);
 
-	void DoJumpStart();
-
-	void DoJumpEnd();
-
 	void Attack();
+
+	void Dodge();
 
 	//GAS
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS|Input")
-	FGameplayTag InputTag;
+	FGameplayTag AttackInputTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS|Input")
+	FGameplayTag DodgeInputTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UFLInputConfigDataAsset> InputConfig;
+
+	void AbilityInputPressed(FGameplayTag InputTag);
 };

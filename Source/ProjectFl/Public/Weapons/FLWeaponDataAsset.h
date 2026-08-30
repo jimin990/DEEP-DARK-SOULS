@@ -4,9 +4,38 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "Abilities/GameplayAbility.h"
 #include "FLWeaponDataAsset.generated.h"
 
 class UStaticMesh;
+class UFLAttackDataAsset;
+
+USTRUCT(BlueprintType)
+struct FFLWeaponAttackData
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+    TObjectPtr<UAnimMontage> AttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+    FName TraceStartSocketName;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+    FName TraceEndSocketName;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+    float TraceRadius = 20.f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+    TArray<TSubclassOf<UGameplayEffect>> TargetEffects;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+    FGameplayTag HitReactEventTag;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+    FGameplayTag AttackTraceEventTag;
+};
 
 UCLASS()
 class PROJECTFL_API UFLWeaponDataAsset : public UPrimaryDataAsset
@@ -14,18 +43,21 @@ class PROJECTFL_API UFLWeaponDataAsset : public UPrimaryDataAsset
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, Category = "Mesh")
-	TObjectPtr<UStaticMesh> WeaponMesh;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+    TObjectPtr<UStaticMesh> WeaponMesh;
 
-	UPROPERTY(EditAnywhere, Category = "Mesh|SocketName")
-	FName TraceStartSocketName;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+    FName AttachSocketName;
 
-	UPROPERTY(EditAnywhere, Category = "Mesh|SocketName")
-	FName TraceEndSocketName;
-	 
-	UPROPERTY(EditAnywhere, Category = "Mesh|SocketName")
-	float TraceRadius;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+    FTransform AttachOffset;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	FTransform AttachOffset;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+    float WeaponPower = 0.f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+    float WeaponPowerMultiplier = 1.f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+    TArray<FFLWeaponAttackData> ComboAttacks;
 };

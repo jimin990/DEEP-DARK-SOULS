@@ -9,6 +9,7 @@
 class UGameplayEffect;
 class UAbilityTask_WaitGameplayEvent;
 class UAbilityTask_PlayMontageAndWait;
+class AFLCharacterBase;
 
 UCLASS()
 class PROJECTFL_API UFLGameplayAbility_Attack : public UGameplayAbility
@@ -18,20 +19,12 @@ class PROJECTFL_API UFLGameplayAbility_Attack : public UGameplayAbility
 	UFLGameplayAbility_Attack();
 
 public:
-	UPROPERTY(EditAnywhere, Category = "Montage")
-	TObjectPtr<UAnimMontage> AttackMontage;
-
-public:
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		const FGameplayEventData* TriggerEventData
 	) override;
-
-protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
-	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
 private:
 	UPROPERTY()
@@ -57,4 +50,35 @@ private:
 
 public:
 	void ApplyDamageEffectToTarget(AActor* TargetActor);
+
+	//ComboSystem
+public:
+	int32 ComboIndex = 0;
+
+	bool bCanReceiveComboInput = false;
+	bool bComboInputBuffered = false;
+	bool bChangingComboMontage = false;
+
+	UPROPERTY()
+	TObjectPtr<UAbilityTask_WaitGameplayEvent> ComboInputTask;
+
+	UPROPERTY()
+	TObjectPtr<UAbilityTask_WaitGameplayEvent> ComboOpenTask;
+
+	UPROPERTY()
+	TObjectPtr<UAbilityTask_WaitGameplayEvent> ComboCloseTask;
+
+	void PlayComboMontage();
+
+	UFUNCTION()
+	void OnComboInput(FGameplayEventData Payload);
+
+	UFUNCTION()
+	void OnComboWindowOpen(FGameplayEventData Payload);
+
+	UFUNCTION()
+	void OnComboWindowClose(FGameplayEventData Payload);
+
+	// 콤보 공격중 방향 지정
+	void ApplyAttackDirection(AFLCharacterBase* InCharacter);
 };
