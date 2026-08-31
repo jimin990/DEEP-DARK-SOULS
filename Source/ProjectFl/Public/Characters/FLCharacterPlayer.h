@@ -49,6 +49,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> DodgeAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> HealAction;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -62,6 +65,8 @@ protected:
 
 	void Dodge();
 
+	void Heal();
+
 	//GAS
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS|Input")
@@ -69,6 +74,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS|Input")
 	FGameplayTag DodgeInputTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS|Input")
+	FGameplayTag HealInputTag;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UFLInputConfigDataAsset> InputConfig;

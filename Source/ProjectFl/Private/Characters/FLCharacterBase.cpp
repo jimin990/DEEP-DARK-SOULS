@@ -51,7 +51,11 @@ void AFLCharacterBase::BeginPlay()
 		AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	}
 
+	// 어빌리티 부여
 	GiveDefaultAbilities();
+
+	// 이펙트 부여
+	ApplyStartupEffects();
 }
 
 // Called every frame
@@ -107,8 +111,77 @@ void AFLCharacterBase::GiveDefaultAbilities()
 	}
 }
 
+void AFLCharacterBase::ApplyStartupEffects()
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	for (TSubclassOf<UGameplayEffect> EffectClass : StartupEffects)
+	{
+		if (!EffectClass)
+		{
+			continue;
+		}
+
+		FGameplayEffectContextHandle Context =
+			AbilitySystemComponent->MakeEffectContext();
+
+		Context.AddSourceObject(this);
+
+		FGameplayEffectSpecHandle SpecHandle =
+			AbilitySystemComponent->MakeOutgoingSpec(
+				EffectClass,
+				1.f,
+				Context
+			);
+
+		if (SpecHandle.IsValid())
+		{
+			AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(
+				*SpecHandle.Data.Get()
+			);
+		}
+	}
+}
+
 UFLCombatComponent* AFLCharacterBase::GetCombatComponent() const
 {
 	return CombatComponent;
+}
+
+void AFLCharacterBase::Die()
+{
+
+	if (bIsDead)
+	{
+		return;
+	}
+
+	bIsDead = true;
+
+	if (UCharacterMovementComponent* MovementComp = GetCharacterMovement())
+	{
+		MovementComp->StopMovementImmediately();
+		MovementComp->DisableMovement();
+	}
+
+	if (AController* OwnerController = GetController())
+	{
+		OwnerController->StopMovement();
+	}
+
+	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
+	{
+		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	if (WeaponMeshComponent)
+	{
+		WeaponMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s Die"), *GetName());
 }
 

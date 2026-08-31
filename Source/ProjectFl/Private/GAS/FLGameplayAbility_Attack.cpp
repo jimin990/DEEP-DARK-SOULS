@@ -14,6 +14,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Combat/FLCombatComponent.h"
 #include "Weapons/FLWeaponDataAsset.h"
+#include "Perception/AISense_Damage.h"
 
 UFLGameplayAbility_Attack::UFLGameplayAbility_Attack()
 {
@@ -23,6 +24,12 @@ UFLGameplayAbility_Attack::UFLGameplayAbility_Attack()
 void UFLGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
 
 	UE_LOG(LogTemp, Warning, TEXT("GA_Attack Activated"));
 
@@ -170,8 +177,6 @@ void UFLGameplayAbility_Attack::AttackTrace(FGameplayEventData Payload)
 		Params
 	);
 
-	//UE_LOG(LogTemp, Warning, TEXT("Start:%s, End: %s, Radius: %f"),*Start.ToString(), *End.ToString(), Radius);
-
 	DrawDebugSphere(GetWorld(), Start, Radius, 12, FColor::Green, false, 1.f);
 	DrawDebugSphere(GetWorld(), End, Radius, 12, FColor::Red, false, 1.f);
 	DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 1.f, 0, 2.f);
@@ -268,6 +273,16 @@ void UFLGameplayAbility_Attack::ApplyDamageEffectToTarget(AActor* TargetActor)
 		return;
 	}
 
+	// 상대가 무적 태그가 있다면 데미지 무효
+	const FGameplayTag InvincibleTag =
+		FGameplayTag::RequestGameplayTag(TEXT("State.Invincible"), false);
+
+	if (InvincibleTag.IsValid() && TargetASC->HasMatchingGameplayTag(InvincibleTag))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Target is invincible"));
+		return;
+	}
+
 	FGameplayEffectContextHandle ContextHandle =
 		SourceASC->MakeEffectContext();
 
@@ -336,6 +351,9 @@ void UFLGameplayAbility_Attack::ApplyDamageEffectToTarget(AActor* TargetActor)
 			EventData
 		);
 	}
+
+	// Sense에 데미지 정보 보내기
+	ReportDamageToPerception(TargetActor, 0);
 }
 
 void UFLGameplayAbility_Attack::PlayComboMontage()
@@ -469,4 +487,28 @@ void UFLGameplayAbility_Attack::ApplyAttackDirection(AFLCharacterBase* InCharact
 		TargetRotation.Yaw,
 		0.f
 	));
+}
+
+void UFLGameplayAbility_Attack::ReportDamageToPerception(AActor* TargetActor, float DamageAmount)
+{
+	if (!TargetActor || DamageAmount <= 0.f)
+	{
+		return;
+	}
+
+	AActor* InstigatorActor = GetAvatarActorFromActorInfo();
+
+	if (!InstigatorActor)
+	{
+		return;
+	}
+
+	UAISense_Damage::ReportDamageEvent(
+		TargetActor->GetWorld(),
+		TargetActor,                         // Damage를 받은 Actor
+		InstigatorActor,                     // Damage를 준 Actor
+		DamageAmount,                        // Damage 양
+		InstigatorActor->GetActorLocation(), // 가해자 위치
+		TargetActor->GetActorLocation()      // 피격 위치
+	);
 }

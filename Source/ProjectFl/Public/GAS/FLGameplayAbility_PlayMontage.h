@@ -28,8 +28,10 @@ public:
 	) override;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
-	TSubclassOf<UGameplayEffect> SelfEffectClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
+	TArray<TSubclassOf<UGameplayEffect>> SelfEffectClasses;
+
+	void ApplySelfEffects();
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

@@ -21,11 +21,20 @@ void UFLGameplayAbility_PlayMontage::ActivateAbility(const FGameplayAbilitySpecH
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
 	if (!Montage)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Montage is null"));
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
+
+	ApplySelfEffects();
 
 	MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this,
@@ -51,6 +60,49 @@ void UFLGameplayAbility_PlayMontage::ActivateAbility(const FGameplayAbilitySpecH
 	);
 
 	MontageTask->ReadyForActivation();
+}
+
+void UFLGameplayAbility_PlayMontage::ApplySelfEffects()
+{
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+
+	if (!ASC)
+	{
+		return;
+	}
+
+	FGameplayEffectContextHandle ContextHandle =
+		ASC->MakeEffectContext();
+
+	ContextHandle.AddSourceObject(this);
+	ContextHandle.AddInstigator(
+		GetAvatarActorFromActorInfo(),
+		GetAvatarActorFromActorInfo()
+	);
+
+	for (const TSubclassOf<UGameplayEffect>& EffectClass : SelfEffectClasses)
+	{
+		if (!EffectClass)
+		{
+			continue;
+		}
+
+		FGameplayEffectSpecHandle SpecHandle =
+			ASC->MakeOutgoingSpec(
+				EffectClass,
+				GetAbilityLevel(),
+				ContextHandle
+			);
+
+		if (!SpecHandle.IsValid())
+		{
+			continue;
+		}
+
+		ASC->ApplyGameplayEffectSpecToSelf(
+			*SpecHandle.Data.Get()
+		);
+	}
 }
 
 void UFLGameplayAbility_PlayMontage::OnAttackMontageCompleted()

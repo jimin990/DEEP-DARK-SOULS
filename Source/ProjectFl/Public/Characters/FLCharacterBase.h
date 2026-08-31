@@ -43,8 +43,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS")
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
 	UPROPERTY()
 	TObjectPtr<UFLAttributeSet> AttributeSet;
 
@@ -52,6 +50,15 @@ protected:
 	TObjectPtr<UFLAbilitySetPrimaryDataAsset> AbilitySet;
 
 	void GiveDefaultAbilities();
+
+	// 기본 Effects
+	UPROPERTY(EditDefaultsOnly, Category = "GAS|Effects")
+	TArray<TSubclassOf<UGameplayEffect>> StartupEffects;
+
+	void ApplyStartupEffects();
+
+public:
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
@@ -74,4 +81,12 @@ public:
 	{
 		return LastMoveInputWorldDirection;
 	}
+
+public:
+	// 죽음 처리
+    virtual void Die();
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	bool bIsDead = false;
 };

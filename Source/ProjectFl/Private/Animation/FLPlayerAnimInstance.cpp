@@ -4,14 +4,17 @@
 #include "Animation/FLPlayerAnimInstance.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "GameplayTagContainer.h"
 
 void UFLPlayerAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
-	if (Character = Cast<ACharacter>(GetOwningActor()))
+	if (OwnerCharacter = Cast<ACharacter>(GetOwningActor()))
 	{
-		MovementComp = Character->GetCharacterMovement();
+		MovementComp = OwnerCharacter->GetCharacterMovement();
 	}
 }
 
@@ -27,11 +30,25 @@ void UFLPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsIdle = GroundSpeed < 3.f && MovementComp->GetCurrentAcceleration() == FVector::ZeroVector;
 		bIsFalling = MovementComp->IsFalling();
 
-		FRotator ControlRot = Character->GetControlRotation();
-		FRotator PlayerRot = Character->GetActorRotation();
+		FRotator ControlRot = OwnerCharacter->GetControlRotation();
+		FRotator PlayerRot = OwnerCharacter->GetActorRotation();
 		FRotator DeltaRot = (ControlRot - PlayerRot).GetNormalized();
 
 		AimYaw = DeltaRot.Yaw;
 		AimPitch = DeltaRot.Pitch;
 	}
+
+	UAbilitySystemComponent* ASC =
+		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OwnerCharacter);
+
+	if (!ASC)
+	{
+		bIsDead = false;
+		return;
+	}
+
+	const FGameplayTag DeadTag =
+		FGameplayTag::RequestGameplayTag(TEXT("State.Dead"), false);
+
+	bIsDead = DeadTag.IsValid() && ASC->HasMatchingGameplayTag(DeadTag);
 }

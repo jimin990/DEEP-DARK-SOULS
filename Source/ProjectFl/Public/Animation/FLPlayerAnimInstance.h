@@ -17,7 +17,7 @@ class PROJECTFL_API UFLPlayerAnimInstance : public UAnimInstance
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Reference")
-	TObjectPtr<ACharacter> Character;
+	TObjectPtr<ACharacter> OwnerCharacter;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Reference")
 	TObjectPtr<UCharacterMovementComponent> MovementComp;
@@ -40,6 +40,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
 	FVector Velocity;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Data")
+	bool bIsDead = false;
 	
 public:
 	virtual void NativeInitializeAnimation() override;

@@ -56,6 +56,7 @@ void AFLCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFLCharacterPlayer::Look);
 	EIC->BindAction(DodgeAction, ETriggerEvent::Started, this, &AFLCharacterPlayer::Dodge);
 	EIC->BindAction(AttackAction, ETriggerEvent::Started, this, &AFLCharacterPlayer::Attack);
+	EIC->BindAction(HealAction, ETriggerEvent::Started, this, &AFLCharacterPlayer::Heal);
 
 	// InputConfig 를 읽고 태그를 인자로 사용하는 함수로 바인딩
 	/*
@@ -200,6 +201,30 @@ void AFLCharacterPlayer::Dodge()
 	for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
 	{
 		if (!Spec.DynamicAbilityTags.HasTagExact(DodgeInputTag))
+		{
+			continue;
+		}
+
+		const bool bActivated = ASC->TryActivateAbility(Spec.Handle);
+
+		return;
+	}
+}
+
+void AFLCharacterPlayer::Heal()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Dodge!"));
+
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!ASC || !HealInputTag.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ASC or InputTag is invalid"));
+		return;
+	}
+
+	for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+	{
+		if (!Spec.DynamicAbilityTags.HasTagExact(HealInputTag))
 		{
 			continue;
 		}

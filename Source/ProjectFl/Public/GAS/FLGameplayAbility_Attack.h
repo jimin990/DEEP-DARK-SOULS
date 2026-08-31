@@ -81,4 +81,10 @@ public:
 
 	// 콤보 공격중 방향 지정
 	void ApplyAttackDirection(AFLCharacterBase* InCharacter);
+
+	// Sense에게 데미지 알리기 
+	void ReportDamageToPerception(
+		AActor* TargetActor,
+		float DamageAmount
+	);
 };

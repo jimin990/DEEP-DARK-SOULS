@@ -77,6 +77,25 @@ EBTNodeResult::Type UFLBTTask_ActivateAbilityByTag::ExecuteTask(
 
 EBTNodeResult::Type UFLBTTask_ActivateAbilityByTag::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	/*if (CachedASC)
+	{
+		FGameplayTagContainer TagsToCancel;
+		TagsToCancel.AddTag(AbilityTag);
+
+		CachedASC->CancelAbilities(
+			&TagsToCancel,
+			nullptr,
+			nullptr
+		);
+
+		CachedASC->OnAbilityEnded.RemoveAll(this);
+	}
+
+	CachedASC = nullptr;
+	CachedOwnerComp = nullptr;
+
+	return EBTNodeResult::Aborted;*/
+
 	UE_LOG(LogTemp, Warning, TEXT("Task abort!"));
 	return EBTNodeResult::Failed;
 }

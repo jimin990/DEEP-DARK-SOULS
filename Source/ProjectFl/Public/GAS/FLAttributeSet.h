@@ -21,6 +21,18 @@ class PROJECTFL_API UFLAttributeSet : public UAttributeSet
 public:
 	UFLAttributeSet();
 
+	// Attribute 안에 수치가 변경될대 실행되는 함수
+	virtual void PostGameplayEffectExecute(
+		const struct FGameplayEffectModCallbackData& Data
+	) override;
+
+protected:
+	// 체력 수치가 변경될때 처리 함수
+	void HandleHealthChanged(
+		const struct FGameplayEffectModCallbackData& Data
+	);
+
+public:
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData Health;
 	ATTRIBUTE_ACCESSORS(UFLAttributeSet, Health)
@@ -28,4 +40,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData MaxHealth;
 	ATTRIBUTE_ACCESSORS(UFLAttributeSet, MaxHealth)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attribute")
+	FGameplayAttributeData Stamina;
+	ATTRIBUTE_ACCESSORS(UFLAttributeSet, Stamina)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attribute")
+	FGameplayAttributeData MaxStamina;
+	ATTRIBUTE_ACCESSORS(UFLAttributeSet, MaxStamina)
 };
