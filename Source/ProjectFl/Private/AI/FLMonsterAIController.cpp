@@ -48,31 +48,6 @@ void AFLMonsterAIController::BeginPlay()
 
 void AFLMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	/*APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-
-	if (Actor != PlayerPawn)
-	{
-		return;
-	}
-
-	UBlackboardComponent* BB = GetBlackboardComponent();
-
-	if (!BB)
-	{
-		return;
-	}
-
-	if (Stimulus.WasSuccessfullySensed())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Stimulus is Succecssfully!"))
-		BB->SetValueAsObject(TEXT("Target"), Actor);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Stimulus is failed!"))
-		BB->ClearValue(TEXT("Target"));
-	}*/
-
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 
 	if (Actor != PlayerPawn)
@@ -89,8 +64,6 @@ void AFLMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulu
 	if (Stimulus.Type == UAISense::GetSenseID<UAISense_Damage>())
 	{
 		BB->SetValueAsObject(TEXT("Target"), Actor);
-		//BB->SetValueAsVector(TEXT("LastSeenLocation"), Actor->GetActorLocation());
-		//BB->SetValueAsBool(TEXT("HasLineOfSight"), false);
 
 		UE_LOG(LogTemp, Warning, TEXT("Damage Sense Target: %s"), *Actor->GetName());
 		return;
@@ -104,7 +77,7 @@ void AFLMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulu
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Stimulus is failed!"))
-			BB->ClearValue(TEXT("Target"));
+		/*UE_LOG(LogTemp, Warning, TEXT("Stimulus is failed!"))
+			BB->ClearValue(TEXT("Target"));*/
 	}
 }

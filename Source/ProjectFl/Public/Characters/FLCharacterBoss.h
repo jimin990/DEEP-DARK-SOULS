@@ -14,4 +14,9 @@ class PROJECTFL_API AFLCharacterBoss : public AFLCharacterBase
 {
 	GENERATED_BODY()
 	
+public:
+	AFLCharacterBoss();
+
+protected:
+	virtual void BeginPlay() override;
 };

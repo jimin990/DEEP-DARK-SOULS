@@ -11,6 +11,8 @@ UFLBTTask_ActivateAbilityByTag::UFLBTTask_ActivateAbilityByTag()
 {
 	NodeName = TEXT("Activate Ability By Tag");
 	bNotifyTaskFinished = true;
+
+	bCreateNodeInstance = true;
 }
 
 EBTNodeResult::Type UFLBTTask_ActivateAbilityByTag::ExecuteTask(
@@ -42,62 +44,70 @@ EBTNodeResult::Type UFLBTTask_ActivateAbilityByTag::ExecuteTask(
 	FGameplayTagContainer TagContainer;
 	TagContainer.AddTag(AbilityTag);
 
-	//const bool bActivated = CachedASC->TryActivateAbilitiesByTag(TagContainer);
-
 	for (const FGameplayAbilitySpec& Spec : CachedASC->GetActivatableAbilities())
 	{
-		if (Spec.DynamicAbilityTags.HasTagExact(AbilityTag))
+		if (!Spec.DynamicAbilityTags.HasTagExact(AbilityTag))
 		{
-			const bool bActivated = CachedASC->TryActivateAbility(Spec.Handle);
-
-			if (!bActivated)
-			{
-				CachedASC->OnAbilityEnded.RemoveAll(this);
-				CachedASC = nullptr;
-				CachedOwnerComp = nullptr;
-
-				return EBTNodeResult::Failed;
-			}
-
-			break;
+			continue;
 		}
+
+		const bool bActivated = CachedASC->TryActivateAbility(Spec.Handle);
+
+		if (!bActivated)
+		{
+			CachedASC->OnAbilityEnded.RemoveAll(this);
+			CachedASC = nullptr;
+			CachedOwnerComp = nullptr;
+			ActivatedAbilityHandle = FGameplayAbilitySpecHandle();
+
+			return EBTNodeResult::Failed;
+		}
+
+		ActivatedAbilityHandle = Spec.Handle;
+
+		return EBTNodeResult::InProgress;
 	}
 
-	/*if (!bActivated)
-	{
-		CachedASC->OnAbilityEnded.RemoveAll(this);
-		CachedASC = nullptr;
-		CachedOwnerComp = nullptr;
+	CachedASC->OnAbilityEnded.RemoveAll(this);
+	CachedASC = nullptr;
+	CachedOwnerComp = nullptr;
+	ActivatedAbilityHandle = FGameplayAbilitySpecHandle();
 
-		return EBTNodeResult::Failed;
-	}*/
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("Ability not found by tag: %s"),
+		*AbilityTag.ToString()
+	);
 
-	return EBTNodeResult::InProgress;
+	return EBTNodeResult::Failed;
 }
 
-EBTNodeResult::Type UFLBTTask_ActivateAbilityByTag::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UFLBTTask_ActivateAbilityByTag::AbortTask(
+	UBehaviorTreeComponent& OwnerComp,
+	uint8* NodeMemory
+)
 {
-	/*if (CachedASC)
+	UAbilitySystemComponent* ASC = CachedASC.Get();
+	const FGameplayAbilitySpecHandle AbilityHandle = ActivatedAbilityHandle;
+
+	if (ASC)
 	{
-		FGameplayTagContainer TagsToCancel;
-		TagsToCancel.AddTag(AbilityTag);
-
-		CachedASC->CancelAbilities(
-			&TagsToCancel,
-			nullptr,
-			nullptr
-		);
-
-		CachedASC->OnAbilityEnded.RemoveAll(this);
+		ASC->OnAbilityEnded.RemoveAll(this);
 	}
 
 	CachedASC = nullptr;
 	CachedOwnerComp = nullptr;
+	ActivatedAbilityHandle = FGameplayAbilitySpecHandle();
 
-	return EBTNodeResult::Aborted;*/
+	if (ASC && AbilityHandle.IsValid())
+	{
+		ASC->CancelAbilityHandle(AbilityHandle);
+	}
 
 	UE_LOG(LogTemp, Warning, TEXT("Task abort!"));
-	return EBTNodeResult::Failed;
+
+	return EBTNodeResult::Aborted;
 }
 
 void UFLBTTask_ActivateAbilityByTag::OnAbilityEnded(
@@ -109,12 +119,7 @@ void UFLBTTask_ActivateAbilityByTag::OnAbilityEnded(
 		return;
 	}
 
-	if (!AbilityEndedData.AbilityThatEnded)
-	{
-		return;
-	}
-
-	if (!AbilityEndedData.AbilityThatEnded->AbilityTags.HasTag(AbilityTag))
+	if (AbilityEndedData.AbilitySpecHandle != ActivatedAbilityHandle)
 	{
 		return;
 	}
@@ -128,6 +133,7 @@ void UFLBTTask_ActivateAbilityByTag::OnAbilityEnded(
 
 	CachedASC = nullptr;
 	CachedOwnerComp = nullptr;
+	ActivatedAbilityHandle = FGameplayAbilitySpecHandle();
 
 	FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 }
@@ -145,6 +151,7 @@ void UFLBTTask_ActivateAbilityByTag::OnTaskFinished(
 
 	CachedASC = nullptr;
 	CachedOwnerComp = nullptr;
+	ActivatedAbilityHandle = FGameplayAbilitySpecHandle();
 
 	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 }

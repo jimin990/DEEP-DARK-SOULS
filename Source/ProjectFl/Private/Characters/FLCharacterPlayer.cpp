@@ -15,6 +15,8 @@
 #include "GameplayTagContainer.h"
 #include "Abilities/GameplayAbilityTypes.h"
 #include "Input/FLInputConfigDataAsset.h"
+#include "Player/FLPlayerState.h"
+#include "Weapons/FLInventoryComponent.h"
 
 AFLCharacterPlayer::AFLCharacterPlayer()
 {
@@ -24,6 +26,7 @@ AFLCharacterPlayer::AFLCharacterPlayer()
 
 	SpringArmComponent->TargetArmLength = 300.f;
 	SpringArmComponent->bUsePawnControlRotation = true;
+	SpringArmComponent->bDoCollisionTest = false;
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
@@ -38,7 +41,7 @@ void AFLCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (!IMC || !MoveAction || !LookAction || !DodgeAction || !AttackAction)
+	if (!IMC || !MoveAction || !LookAction || !DodgeAction || !AttackAction || !HealAction || !InventoryAction)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InputAsset is null!"));
 		return;
@@ -57,6 +60,7 @@ void AFLCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EIC->BindAction(DodgeAction, ETriggerEvent::Started, this, &AFLCharacterPlayer::Dodge);
 	EIC->BindAction(AttackAction, ETriggerEvent::Started, this, &AFLCharacterPlayer::Attack);
 	EIC->BindAction(HealAction, ETriggerEvent::Started, this, &AFLCharacterPlayer::Heal);
+	EIC->BindAction(InventoryAction,ETriggerEvent::Started,this,&AFLCharacterPlayer::ToggleInventory);
 
 	// InputConfig 를 읽고 태그를 인자로 사용하는 함수로 바인딩
 	/*
@@ -103,6 +107,16 @@ void AFLCharacterPlayer::BeginPlay()
 		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
 	{
 		Subsystem->AddMappingContext(IMC, 0);
+	}
+
+	AFLPlayerState* FLPlayerState = GetPlayerState<AFLPlayerState>();
+
+	if (FLPlayerState)
+	{
+		if (UFLInventoryComponent* InventoryComponent = FLPlayerState->GetInventoryComponent())
+		{
+			InventoryComponent->ApplyEquippedWeaponToCharacter(this);
+		}
 	}
 }
 
@@ -213,7 +227,7 @@ void AFLCharacterPlayer::Dodge()
 
 void AFLCharacterPlayer::Heal()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Dodge!"));
+	UE_LOG(LogTemp, Warning, TEXT("Heal!"));
 
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!ASC || !HealInputTag.IsValid())
@@ -273,4 +287,38 @@ void AFLCharacterPlayer::AbilityInputPressed(FGameplayTag InputTag)
 
 		return;
 	}
+}
+
+void AFLCharacterPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	AFLPlayerState* FLPlayerState = GetPlayerState<AFLPlayerState>();
+
+	if (!FLPlayerState)
+	{
+		return;
+	}
+
+	UFLInventoryComponent* InventoryComponent = FLPlayerState->GetInventoryComponent();
+
+	if (!InventoryComponent)
+	{
+		return;
+	}
+
+	InventoryComponent->ApplyEquippedWeaponToCharacter(this);
+}
+
+void AFLCharacterPlayer::ToggleInventory()
+{
+	AFLPlayerController* FLPlayerController =
+		Cast<AFLPlayerController>(GetController());
+
+	if (!FLPlayerController)
+	{
+		return;
+	}
+
+	FLPlayerController->ToggleInventory();
 }

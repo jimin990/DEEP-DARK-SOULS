@@ -7,6 +7,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayTagContainer.h"
+#include "KismetAnimationLibrary.h"
 
 void UFLPlayerAnimInstance::NativeInitializeAnimation()
 {
@@ -36,6 +37,13 @@ void UFLPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 		AimYaw = DeltaRot.Yaw;
 		AimPitch = DeltaRot.Pitch;
+
+		Lean = UKismetAnimationLibrary::CalculateDirection(
+			Velocity,
+			OwnerCharacter->GetActorRotation()
+		);
+
+		SlopeForwardAngle = GroundSpeed;
 	}
 
 	UAbilitySystemComponent* ASC =

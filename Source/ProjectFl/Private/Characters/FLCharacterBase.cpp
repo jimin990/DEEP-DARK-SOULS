@@ -46,6 +46,8 @@ void AFLCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UE_LOG(LogTemp, Warning, TEXT("%s GiveDefaultAbilities Called"), *GetName());
+
 	if (AbilitySystemComponent)
 	{
 		AbilitySystemComponent->InitAbilityActorInfo(this, this);

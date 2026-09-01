@@ -19,10 +19,12 @@ public class ProjectFl : ModuleRules
 			"GameplayStateTreeModule",
 			"UMG",
 			"Slate",
+            "SlateCore",
             "GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks",
-            "Niagara"
+            "Niagara",
+            "AnimGraphRuntime"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

@@ -28,8 +28,6 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    void EquipWeapon(UFLWeaponDataAsset* InWeaponData);
-
     bool GetAttackTraceInfo(
         FVector& OutStart,
         FVector& OutEnd,
@@ -49,4 +47,8 @@ public:
     TObjectPtr<UFLWeaponDataAsset> CurrentWeaponData;
 
     UFLWeaponDataAsset* GetCurrentWeaponData() const;
+
+public:
+    void EquipWeapon(UFLWeaponDataAsset* NewWeaponData);
+    void UnequipWeapon();
 };

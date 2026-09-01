@@ -30,30 +30,6 @@ void UFLCombatComponent::BeginPlay()
     EquipWeapon(WeaponData);
 }
 
-void UFLCombatComponent::EquipWeapon(UFLWeaponDataAsset* InWeaponData)
-{
-    if (!OwnerCharacter || !InWeaponData)
-    {
-        return;
-    }
-
-    CurrentWeaponData = InWeaponData;
-
-    if (OwnerCharacter->WeaponMeshComponent)
-    {
-        OwnerCharacter->WeaponMeshComponent->SetStaticMesh(InWeaponData->WeaponMesh);
-
-        OwnerCharacter->WeaponMeshComponent->AttachToComponent(
-            OwnerCharacter->GetMesh(),
-            FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-            InWeaponData->AttachSocketName
-        );
-
-        OwnerCharacter->WeaponMeshComponent->SetRelativeTransform(InWeaponData->AttachOffset);
-        OwnerCharacter->WeaponMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    }
-}
-
 bool UFLCombatComponent::GetAttackTraceInfo(
     FVector& OutStart,
     FVector& OutEnd,
@@ -96,4 +72,63 @@ UFLWeaponDataAsset* UFLCombatComponent::GetCurrentWeaponData() const
     }
 
     return CurrentWeaponData;
+}
+
+void UFLCombatComponent::EquipWeapon(UFLWeaponDataAsset* InWeaponData)
+{
+    if (!OwnerCharacter || !InWeaponData)
+    {
+        return;
+    }
+
+    CurrentWeaponData = InWeaponData;
+
+    if (OwnerCharacter->WeaponMeshComponent)
+    {
+        OwnerCharacter->WeaponMeshComponent->SetStaticMesh(InWeaponData->WeaponMesh);
+
+        OwnerCharacter->WeaponMeshComponent->AttachToComponent(
+            OwnerCharacter->GetMesh(),
+            FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+            InWeaponData->AttachSocketName
+        );
+
+        OwnerCharacter->WeaponMeshComponent->SetRelativeTransform(InWeaponData->AttachOffset);
+        OwnerCharacter->WeaponMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
+}
+/*
+void UFLCombatComponent::EquipWeapon(UFLWeaponDataAsset* NewWeaponData)
+{
+    if (!NewWeaponData || !OwnerCharacter)
+    {
+        return;
+    }
+
+    WeaponData = NewWeaponData;
+
+    if (OwnerCharacter->WeaponMeshComponent)
+    {
+        OwnerCharacter->WeaponMeshComponent->SetStaticMesh(
+            WeaponData->WeaponMesh
+        );
+
+        OwnerCharacter->WeaponMeshComponent->AttachToComponent(
+            OwnerCharacter->GetMesh(),
+            FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+            WeaponData->AttachSocketName
+        );
+    }
+}
+*/
+
+void UFLCombatComponent::UnequipWeapon()
+{
+    WeaponData = nullptr;
+    CurrentWeaponData = nullptr;
+
+    if (OwnerCharacter && OwnerCharacter->WeaponMeshComponent)
+    {
+        OwnerCharacter->WeaponMeshComponent->SetStaticMesh(nullptr);
+    }
 }

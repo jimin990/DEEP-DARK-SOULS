@@ -82,4 +82,11 @@ protected:
 	TObjectPtr<UFLInputConfigDataAsset> InputConfig;
 
 	void AbilityInputPressed(FGameplayTag InputTag);
+
+	virtual void PossessedBy(AController* NewController) override;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> InventoryAction;
+
+	void ToggleInventory();
 };

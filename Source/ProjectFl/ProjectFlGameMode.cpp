@@ -1,8 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ProjectFlGameMode.h"
+#include "Player/FLPlayerState.h"
 
 AProjectFlGameMode::AProjectFlGameMode()
 {
-	// stub
+	PlayerStateClass = AFLPlayerState::StaticClass();
 }

@@ -47,6 +47,25 @@ void UFLBTService_UpdateAIState::TickNode(
     const bool bIsHitReact =
         ASC && HitReactTag.IsValid() && ASC->HasMatchingGameplayTag(HitReactTag);
 
+    const bool bCanUseNormalAttack =
+        ASC && !ASC->HasMatchingGameplayTag(
+            FGameplayTag::RequestGameplayTag(TEXT("Cooldown.Attack"))
+        );
+
+    const bool bCanUseChargeAttack =
+        ASC && !ASC->HasMatchingGameplayTag(
+            FGameplayTag::RequestGameplayTag(TEXT("Cooldown.Boss.Charge"))
+        );
+
+    const bool bCanUseAreaAttack =
+        ASC && !ASC->HasMatchingGameplayTag(
+            FGameplayTag::RequestGameplayTag(TEXT("Cooldown.Boss.Area"))
+        );
+
+    BB->SetValueAsBool(CanUseNormalAttackKey.SelectedKeyName, bCanUseNormalAttack);
+    BB->SetValueAsBool(CanUseChargeAttackKey.SelectedKeyName, bCanUseChargeAttack);
+    BB->SetValueAsBool(CanUseAreaAttackKey.SelectedKeyName, bCanUseAreaAttack);
+
     BB->SetValueAsBool(IsDeadKey.SelectedKeyName, bIsDead);
 
     if (bIsDead)

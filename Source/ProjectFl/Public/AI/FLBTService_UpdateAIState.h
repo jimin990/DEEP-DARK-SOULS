@@ -35,6 +35,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector AIStateKey;
 
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector CanUseNormalAttackKey;
+
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector CanUseChargeAttackKey;
+
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector CanUseAreaAttackKey;
+
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float CombatRange = 100.f;
 };

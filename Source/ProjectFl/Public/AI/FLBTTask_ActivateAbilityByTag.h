@@ -50,4 +50,6 @@ private:
 	UPROPERTY()
 	TObjectPtr<UBehaviorTreeComponent> CachedOwnerComp;
 	
+private:
+	FGameplayAbilitySpecHandle ActivatedAbilityHandle;
 };

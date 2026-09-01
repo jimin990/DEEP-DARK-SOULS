@@ -60,4 +60,11 @@ public:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
     TArray<FFLWeaponAttackData> ComboAttacks;
+
+public:
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+    FText WeaponName;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+    TObjectPtr<UTexture2D> WeaponIcon;
 };

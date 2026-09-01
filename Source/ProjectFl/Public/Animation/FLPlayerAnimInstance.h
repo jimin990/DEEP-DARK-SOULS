@@ -43,6 +43,13 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Data")
 	bool bIsDead = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+	float Lean = 0.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+	float SlopeForwardAngle = 0.f;
+
 	
 public:
 	virtual void NativeInitializeAnimation() override;
