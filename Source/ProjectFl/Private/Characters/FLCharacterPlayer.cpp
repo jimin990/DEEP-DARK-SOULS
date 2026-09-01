@@ -17,6 +17,9 @@
 #include "Input/FLInputConfigDataAsset.h"
 #include "Player/FLPlayerState.h"
 #include "Weapons/FLInventoryComponent.h"
+#include "ProjectFlGameMode.h"
+#include "Kismet/GameplayStatics.h"
+#include "Core/FLGameMode.h"
 
 AFLCharacterPlayer::AFLCharacterPlayer()
 {
@@ -321,4 +324,79 @@ void AFLCharacterPlayer::ToggleInventory()
 	}
 
 	FLPlayerController->ToggleInventory();
+}
+
+void AFLCharacterPlayer::Die()
+{
+	Super::Die();
+
+	if (AFLPlayerController* FLPlayerController =
+		Cast<AFLPlayerController>(GetController()))
+	{
+		FLPlayerController->HideBossHealthBar();
+		FLPlayerController->StopBossBGM(1.f);
+	}
+
+	AController* OwnerController = GetController();
+
+	if (!OwnerController)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OwnerController is null"));
+		return;
+	}
+
+	TWeakObjectPtr<AController> WeakController = OwnerController;
+	TWeakObjectPtr<APawn> WeakDeadPawn = this;
+
+	FTimerHandle RespawnTimerHandle;
+
+	GetWorldTimerManager().SetTimer(
+		RespawnTimerHandle,
+		FTimerDelegate::CreateLambda(
+			[WeakController, WeakDeadPawn]()
+			{
+				if (!WeakController.IsValid())
+				{
+					UE_LOG(LogTemp, Warning, TEXT("WeakController is invalid"));
+					return;
+				}
+
+				AController* Controller = WeakController.Get();
+				UWorld* World = Controller->GetWorld();
+
+				if (!World)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("World is null"));
+					return;
+				}
+
+				AFLGameMode* FLGameMode =
+					World->GetAuthGameMode<AFLGameMode>();
+
+				if (!FLGameMode)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("FLGameMode is null"));
+					return;
+				}
+
+				APawn* DeadPawn = WeakDeadPawn.Get();
+
+				if (Controller->GetPawn() == DeadPawn)
+				{
+					Controller->UnPossess();
+				}
+
+				if (DeadPawn)
+				{
+					DeadPawn->Destroy();
+				}
+
+				UE_LOG(LogTemp, Warning, TEXT("RespawnPlayer Called"));
+
+				FLGameMode->RespawnPlayer(Controller);
+			}
+		),
+		RespawnDelay,
+		false
+	);
 }

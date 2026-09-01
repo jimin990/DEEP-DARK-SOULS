@@ -7,6 +7,7 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "Perception/AISenseConfig_Damage.h"
+#include "Characters/FLCharacterMonster.h"
 
 AFLMonsterAIController::AFLMonsterAIController()
 {
@@ -46,38 +47,72 @@ void AFLMonsterAIController::BeginPlay()
 	);
 }
 
-void AFLMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
+void AFLMonsterAIController::OnTargetPerceptionUpdated(
+    AActor* Actor,
+    FAIStimulus Stimulus
+)
 {
-	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (!IsValid(Actor))
+    {
+        return;
+    }
 
-	if (Actor != PlayerPawn)
-	{
-		return;
-	}
+    APawn* PlayerPawn =
+        UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 
-	UBlackboardComponent* BB = GetBlackboardComponent();
-	if (!BB || !Actor)
-	{
-		return;
-	}
+    if (Actor != PlayerPawn)
+    {
+        return;
+    }
 
-	if (Stimulus.Type == UAISense::GetSenseID<UAISense_Damage>())
-	{
-		BB->SetValueAsObject(TEXT("Target"), Actor);
+    UBlackboardComponent* BB = GetBlackboardComponent();
 
-		UE_LOG(LogTemp, Warning, TEXT("Damage Sense Target: %s"), *Actor->GetName());
-		return;
-	}
+    if (!BB)
+    {
+        return;
+    }
 
-	// 기존 Sight 처리
-	if (Stimulus.WasSuccessfullySensed())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Stimulus is Succecssfully!"))
-			BB->SetValueAsObject(TEXT("Target"), Actor);
-	}
-	else
-	{
-		/*UE_LOG(LogTemp, Warning, TEXT("Stimulus is failed!"))
-			BB->ClearValue(TEXT("Target"));*/
-	}
+    const bool bIsSightStimulus =
+        Stimulus.Type == UAISense::GetSenseID<UAISense_Sight>();
+
+    const bool bIsDamageStimulus =
+        Stimulus.Type == UAISense::GetSenseID<UAISense_Damage>();
+
+    if (!bIsSightStimulus && !bIsDamageStimulus)
+    {
+        return;
+    }
+
+    // 시야 또는 데미지로 플레이어를 감지한 경우
+    if (Stimulus.WasSuccessfullySensed())
+    {
+        BB->SetValueAsObject(TEXT("Target"), Actor);
+
+        if (AFLCharacterMonster* Monster =
+            Cast<AFLCharacterMonster>(GetPawn()))
+        {
+            Monster->ShowHealthBar();
+        }
+
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("Target acquired: %s / Sense: %s"),
+            *Actor->GetName(),
+            bIsSightStimulus ? TEXT("Sight") : TEXT("Damage")
+        );
+
+        return;
+    }
+
+    // 시야에서 사라져도 Target을 즉시 제거하지 않는다.
+    if (bIsSightStimulus)
+    {
+        UE_LOG(
+            LogTemp,
+            Log,
+            TEXT("Target left sight, but target is retained: %s"),
+            *Actor->GetName()
+        );
+    }
 }

@@ -47,6 +47,12 @@ protected:
     float WarningDelay = 1.0f;
 
     UPROPERTY(EditDefaultsOnly, Category = "Area Attack")
+    FVector WarningEffectSize = FVector(1, 1, 1);
+
+    UPROPERTY(EditDefaultsOnly, Category = "Area Attack")
+    FVector EffectSize = FVector(1, 1, 1);
+
+    UPROPERTY(EditDefaultsOnly, Category = "Area Attack")
     TArray<TSubclassOf<UGameplayEffect>> TargetEffects;
 
     UPROPERTY(EditDefaultsOnly, Category = "Area Attack")

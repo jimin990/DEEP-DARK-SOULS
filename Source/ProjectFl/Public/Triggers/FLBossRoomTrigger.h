@@ -7,6 +7,8 @@
 #include "FLBossRoomTrigger.generated.h"
 
 class UBoxComponent;
+class USoundBase;
+class UAudioComponent;
 
 UCLASS()
 class PROJECTFL_API AFLBossRoomTrigger : public AActor
@@ -47,4 +49,14 @@ private:
         UPrimitiveComponent* OtherComp,
         int32 OtherBodyIndex
     );
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Room|Sound")
+    TObjectPtr<USoundBase> BossBGM;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Room|Sound")
+    float BGMFadeInTime = 1.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Room|Sound")
+    float BGMVolume = 1.f;
 };

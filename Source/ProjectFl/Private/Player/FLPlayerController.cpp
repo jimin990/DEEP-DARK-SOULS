@@ -11,8 +11,9 @@
 #include "UI/FLInventoryWidget.h"
 #include "Player/FLPlayerState.h"
 #include "Weapons/FLInventoryComponent.h"
-#include "Player/FLPlayerState.h"
-#include "Weapons/FLInventoryComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundBase.h"
 
 void AFLPlayerController::BeginPlay()
 {
@@ -271,4 +272,83 @@ void AFLPlayerController::ToggleInventory()
         SetInputMode(InputMode);
         bShowMouseCursor = true;
     }
+}
+
+void AFLPlayerController::PlayBossBGM(
+    USoundBase* InBossBGM,
+    float FadeInTime,
+    float Volume
+)
+{
+    if (!InBossBGM)
+    {
+        return;
+    }
+
+    if (BossBGMComponent)
+    {
+        return;
+    }
+
+    BossBGMComponent = UGameplayStatics::SpawnSound2D(
+        this,
+        InBossBGM,
+        Volume
+    );
+
+    if (BossBGMComponent)
+    {
+        BossBGMComponent->FadeIn(FadeInTime, Volume);
+    }
+}
+
+void AFLPlayerController::StopBossBGM(float FadeOutTime)
+{
+    if (!BossBGMComponent)
+    {
+        return;
+    }
+
+    BossBGMComponent->FadeOut(FadeOutTime, 0.f);
+    BossBGMComponent = nullptr;
+}
+
+void AFLPlayerController::ShowGameEndWidget()
+{
+    FTimerHandle GameEndTimerHandle;
+
+    GetWorld()->GetTimerManager().SetTimer(
+        GameEndTimerHandle,
+        this,
+        &AFLPlayerController::DelayShowGameEndWidget,
+        3.0f,
+        false
+    );
+}
+
+void AFLPlayerController::DelayShowGameEndWidget()
+{
+    if (!GameEndWidgetClass)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("GameEndWidgetClass is null"));
+        return;
+    }
+
+    if (!GameEndWidget)
+    {
+        GameEndWidget = CreateWidget<UUserWidget>(this, GameEndWidgetClass);
+    }
+
+    if (GameEndWidget && !GameEndWidget->IsInViewport())
+    {
+        GameEndWidget->AddToViewport(100);
+    }
+
+    SetPause(true);
+
+    FInputModeUIOnly InputMode;
+    InputMode.SetWidgetToFocus(GameEndWidget->TakeWidget());
+    SetInputMode(InputMode);
+
+    bShowMouseCursor = true;
 }

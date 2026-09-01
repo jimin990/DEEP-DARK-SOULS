@@ -96,15 +96,18 @@ void UFLGameplayAbility_Death::ApplyDeadEffect()
 
 void UFLGameplayAbility_Death::OnDeathMontageCompleted()
 {
+    UE_LOG(LogTemp, Warning, TEXT("OnDeathMontageCompleted"));
     EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 }
 
 void UFLGameplayAbility_Death::OnDeathMontageInterrupted()
 {
+    UE_LOG(LogTemp, Warning, TEXT("OnDeathMontageInterrupted"));
     EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }
 
 void UFLGameplayAbility_Death::OnDeathMontageCancelled()
 {
+    UE_LOG(LogTemp, Warning, TEXT("OnDeathMontageCancelled"));
     EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }

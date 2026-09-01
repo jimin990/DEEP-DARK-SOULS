@@ -5,6 +5,9 @@
 #include "Characters/FLCharacterPlayer.h"
 #include "Components/BoxComponent.h"
 #include "Player/FLPlayerController.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundBase.h"
 
 AFLBossRoomTrigger::AFLBossRoomTrigger()
 {
@@ -59,6 +62,8 @@ void AFLBossRoomTrigger::OnBoxBeginOverlap(
     }
 
     PC->ShowBossHealthBar(BossActor);
+
+    PC->PlayBossBGM(BossBGM, BGMFadeInTime, BGMVolume);
 }
 
 void AFLBossRoomTrigger::OnBoxEndOverlap(

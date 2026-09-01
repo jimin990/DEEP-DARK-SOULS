@@ -106,10 +106,11 @@ void UFLGA_BossAreaAttack::SpawnWarningEffect()
         World,
         WarningEffect,
         AttackLocation,
-        FRotator::ZeroRotator
+        FRotator::ZeroRotator,
+        WarningEffectSize
     );
 
-    DrawDebugSphere(
+    /*DrawDebugSphere(
         World,
         AttackLocation,
         AttackRadius,
@@ -119,7 +120,7 @@ void UFLGA_BossAreaAttack::SpawnWarningEffect()
         WarningDelay,
         0,
         3.f
-    );
+    );*/
 }
 
 void UFLGA_BossAreaAttack::ExecuteAreaAttack()
@@ -152,7 +153,8 @@ void UFLGA_BossAreaAttack::ExecuteAreaAttack()
             World,
             ImpactEffect,
             AttackLocation,
-            FRotator::ZeroRotator
+            FRotator::ZeroRotator,
+            EffectSize
         );
     }
 
@@ -170,7 +172,7 @@ void UFLGA_BossAreaAttack::ExecuteAreaAttack()
         Params
     );
 
-    DrawDebugSphere(
+    /*DrawDebugSphere(
         World,
         AttackLocation,
         AttackRadius,
@@ -180,7 +182,7 @@ void UFLGA_BossAreaAttack::ExecuteAreaAttack()
         1.0f,
         0,
         4.f
-    );
+    );*/
 
     if (!bHit)
     {

@@ -19,4 +19,11 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+public:
+	virtual void Die() override;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death")
+	float DestroyDelayAfterDeath = 5.f;
 };

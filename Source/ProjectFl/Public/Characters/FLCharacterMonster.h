@@ -12,7 +12,7 @@ UCLASS()
 class PROJECTFL_API AFLCharacterMonster : public AFLCharacterBase
 {
 	GENERATED_BODY()
-	
+
 public:
 	AFLCharacterMonster();
 
@@ -22,4 +22,15 @@ protected:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;
+
+public:
+	virtual void Die() override;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death")
+	float DestroyDelayAfterDeath = 5.f;
+
+public:
+	void ShowHealthBar();
+	void HideHealthBar();
 };

@@ -89,4 +89,11 @@ protected:
 	TObjectPtr<UInputAction> InventoryAction;
 
 	void ToggleInventory();
+
+public:
+	virtual void Die() override;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death")
+	float RespawnDelay = 3.f;
 };

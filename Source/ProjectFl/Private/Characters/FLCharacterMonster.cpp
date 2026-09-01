@@ -4,6 +4,11 @@
 #include "Characters/FLCharacterMonster.h"
 #include "Components/WidgetComponent.h"
 #include "UI/FLMonsterHealthBarWidget.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "AIController.h"
+#include "BrainComponent.h"
 
 AFLCharacterMonster::AFLCharacterMonster()
 {
@@ -34,5 +39,45 @@ void AFLCharacterMonster::BeginPlay()
 		{
 			HealthBarWidget->InitAbilitySystem(GetAbilitySystemComponent());
 		}
+
+		HideHealthBar();
+	}
+}
+
+void AFLCharacterMonster::Die()
+{
+	Super::Die();
+
+	if (HealthBarWidgetComponent)
+	{
+		HealthBarWidgetComponent->SetVisibility(false);
+	}
+
+	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if (UBrainComponent* BrainComponent = AIController->GetBrainComponent())
+		{
+			BrainComponent->StopLogic(TEXT("Monster Dead"));
+		}
+
+		AIController->StopMovement();
+	}
+
+	SetLifeSpan(DestroyDelayAfterDeath);
+}
+
+void AFLCharacterMonster::ShowHealthBar()
+{
+	if (HealthBarWidgetComponent)
+	{
+		HealthBarWidgetComponent->SetVisibility(true);
+	}
+}
+
+void AFLCharacterMonster::HideHealthBar()
+{
+	if (HealthBarWidgetComponent)
+	{
+		HealthBarWidgetComponent->SetVisibility(false);
 	}
 }

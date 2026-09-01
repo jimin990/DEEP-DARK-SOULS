@@ -13,6 +13,8 @@ class UAbilitySystemComponent;
 class UFLAttributeSet;
 class UFLInventoryWidget;
 class UInputAction;
+class USoundBase;
+class UAudioComponent;
 
 UCLASS()
 class PROJECTFL_API AFLPlayerController : public APlayerController
@@ -66,4 +68,24 @@ protected:
 
     UPROPERTY()
     TObjectPtr<UFLInventoryWidget> InventoryWidget;
+
+public:
+    void PlayBossBGM(USoundBase* InBossBGM, float FadeInTime = 1.f, float Volume = 1.f);
+    void StopBossBGM(float FadeOutTime = 1.f);
+
+protected:
+    UPROPERTY()
+    TObjectPtr<UAudioComponent> BossBGMComponent;
+
+public:
+    void ShowGameEndWidget();
+
+protected:
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<UUserWidget> GameEndWidgetClass;
+
+    UPROPERTY()
+    TObjectPtr<UUserWidget> GameEndWidget;
+
+    void DelayShowGameEndWidget();
 };

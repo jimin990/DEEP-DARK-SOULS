@@ -234,7 +234,7 @@ void UFLGameplayAbility_Attack::OnAttackMontageCancelled()
 	HitActors.Reset();
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }
-
+/*
 void UFLGameplayAbility_Attack::ApplyDamageEffectToTarget(AActor* TargetActor)
 {
 	
@@ -354,6 +354,153 @@ void UFLGameplayAbility_Attack::ApplyDamageEffectToTarget(AActor* TargetActor)
 
 	// Sense에 데미지 정보 보내기
 	ReportDamageToPerception(TargetActor, 0);
+}*/
+
+void UFLGameplayAbility_Attack::ApplyDamageEffectToTarget(AActor* TargetActor)
+{
+	if (!TargetActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TargetActor is null!!"));
+		return;
+	}
+
+	UAbilitySystemComponent* SourceASC =
+		GetAbilitySystemComponentFromActorInfo();
+
+	UAbilitySystemComponent* TargetASC =
+		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+
+	if (!SourceASC || !TargetASC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SourceASC || TargetASC is null!!"));
+		return;
+	}
+
+	AFLCharacterBase* Character =
+		Cast<AFLCharacterBase>(GetAvatarActorFromActorInfo());
+
+	if (!Character)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Character is null!!"));
+		return;
+	}
+
+	UFLCombatComponent* CombatComponent = Character->GetCombatComponent();
+
+	if (!CombatComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CombatComponent is null!!"));
+		return;
+	}
+
+	UFLWeaponDataAsset* CurrentWeaponData =
+		CombatComponent->GetCurrentWeaponData();
+
+	if (!CurrentWeaponData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CurrentWeaponData is null!!"));
+		return;
+	}
+
+	if (!CurrentWeaponData->ComboAttacks.IsValidIndex(ComboIndex))
+	{
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("Invalid ComboIndex: %d / ComboCount: %d"),
+			ComboIndex,
+			CurrentWeaponData->ComboAttacks.Num()
+		);
+		return;
+	}
+
+	const FFLWeaponAttackData& AttackData =
+		CurrentWeaponData->ComboAttacks[ComboIndex];
+
+	const FGameplayTag InvincibleTag =
+		FGameplayTag::RequestGameplayTag(TEXT("State.Invincible"), false);
+
+	if (InvincibleTag.IsValid() && TargetASC->HasMatchingGameplayTag(InvincibleTag))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Target is invincible"));
+		return;
+	}
+
+	FGameplayEffectContextHandle ContextHandle =
+		SourceASC->MakeEffectContext();
+
+	ContextHandle.AddSourceObject(this);
+	ContextHandle.AddInstigator(
+		GetAvatarActorFromActorInfo(),
+		GetAvatarActorFromActorInfo()
+	);
+
+	for (TSubclassOf<UGameplayEffect> EffectClass : AttackData.TargetEffects)
+	{
+		if (!EffectClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("EffectClass is null!!"));
+			continue;
+		}
+
+		FGameplayEffectSpecHandle SpecHandle =
+			SourceASC->MakeOutgoingSpec(
+				EffectClass,
+				GetAbilityLevel(),
+				ContextHandle
+			);
+
+		if (!SpecHandle.IsValid())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SpecHandle is invalid!!"));
+			continue;
+		}
+
+		SourceASC->ApplyGameplayEffectSpecToTarget(
+			*SpecHandle.Data.Get(),
+			TargetASC
+		);
+
+		const UFLAttributeSet* TargetAttributeSet =
+			TargetASC->GetSet<UFLAttributeSet>();
+
+		if (TargetAttributeSet)
+		{
+			UE_LOG(
+				LogTemp,
+				Warning,
+				TEXT("Target: %s / Health: %f / MaxHealth: %f"),
+				*TargetActor->GetName(),
+				TargetAttributeSet->GetHealth(),
+				TargetAttributeSet->GetMaxHealth()
+			);
+		}
+		else
+		{
+			UE_LOG(
+				LogTemp,
+				Warning,
+				TEXT("Target: %s / AttributeSet is null"),
+				*TargetActor->GetName()
+			);
+		}
+	}
+
+	if (AttackData.HitReactEventTag.IsValid())
+	{
+		FGameplayEventData EventData;
+		EventData.EventTag = AttackData.HitReactEventTag;
+		EventData.Instigator = GetAvatarActorFromActorInfo();
+		EventData.Target = TargetActor;
+
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+			TargetActor,
+			AttackData.HitReactEventTag,
+			EventData
+		);
+	}
+
+	ReportDamageToPerception(TargetActor, 1.f);
 }
 
 void UFLGameplayAbility_Attack::PlayComboMontage()
