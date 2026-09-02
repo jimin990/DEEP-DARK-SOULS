@@ -128,9 +128,9 @@ void UFLGA_BossChargeAttack::TickCharge()
 		Params
 	);
 
-	DrawDebugSphere(Character->GetWorld(), Start, TraceRadius, 12, FColor::Green, false, 0.1f);
+	/*DrawDebugSphere(Character->GetWorld(), Start, TraceRadius, 12, FColor::Green, false, 0.1f);
 	DrawDebugSphere(Character->GetWorld(), End, TraceRadius, 12, FColor::Red, false, 0.1f);
-	DrawDebugLine(Character->GetWorld(), Start, End, FColor::Yellow, false, 0.1f, 0, 2.f);
+	DrawDebugLine(Character->GetWorld(), Start, End, FColor::Yellow, false, 0.1f, 0, 2.f);*/
 
 	if (!bHit)
 	{

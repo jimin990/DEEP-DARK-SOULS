@@ -20,8 +20,10 @@ class PROJECTFL_API AFLMonsterAIController : public AAIController
 public:
 	AFLMonsterAIController();
 
-public:
+protected:
 	virtual void BeginPlay() override;
+
+	virtual void OnPossess(APawn* InPawn) override;
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")

@@ -17,33 +17,90 @@ UFLGameplayAbility_PlayMontage::UFLGameplayAbility_PlayMontage()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-void UFLGameplayAbility_PlayMontage::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+void UFLGameplayAbility_PlayMontage::ActivateAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	const FGameplayEventData* TriggerEventData
+)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
-	}
+	Super::ActivateAbility(
+		Handle,
+		ActorInfo,
+		ActivationInfo,
+		TriggerEventData
+	);
 
 	if (!Montage)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Montage is null"));
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		UE_LOG(
+			LogTemp,
+			Error,
+			TEXT("%s: Montage is null"),
+			*GetNameSafe(GetClass())
+		);
+
+		EndAbility(
+			Handle,
+			ActorInfo,
+			ActivationInfo,
+			true,
+			true
+		);
 		return;
 	}
 
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("%s: CommitAbility failed"),
+			*GetNameSafe(GetClass())
+		);
+
+		EndAbility(
+			Handle,
+			ActorInfo,
+			ActivationInfo,
+			true,
+			true
+		);
+		return;
+	}
+
+	MontageTask =
+		UAbilityTask_PlayMontageAndWait::
+		CreatePlayMontageAndWaitProxy(
+			this,
+			NAME_None,
+			Montage,
+			PlayRate
+		);
+
+	// 생성한 다음에 검사해야 한다.
+	if (!MontageTask)
+	{
+		UE_LOG(
+			LogTemp,
+			Error,
+			TEXT("%s: MontageTask creation failed"),
+			*GetNameSafe(GetClass())
+		);
+
+		EndAbility(
+			Handle,
+			ActorInfo,
+			ActivationInfo,
+			true,
+			true
+		);
+		return;
+	}
+
+	// Task 생성 성공 후 자신에게 이펙트 적용
 	ApplySelfEffects();
 
-	MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
-		this,
-		NAME_None,
-		Montage,
-		PlayRate
-	);
-
-	// 몽타주가 끝나면 동작하는 함수 바인딩
 	MontageTask->OnCompleted.AddDynamic(
 		this,
 		&UFLGameplayAbility_PlayMontage::OnAttackMontageCompleted
@@ -59,7 +116,19 @@ void UFLGameplayAbility_PlayMontage::ActivateAbility(const FGameplayAbilitySpecH
 		&UFLGameplayAbility_PlayMontage::OnAttackMontageCancelled
 	);
 
+	MontageTask->OnBlendOut.AddDynamic(
+		this,
+		&UFLGameplayAbility_PlayMontage::OnAttackMontageBlendOut
+	);
+
 	MontageTask->ReadyForActivation();
+
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("%s: Montage started"),
+		*GetNameSafe(GetClass())
+	);
 }
 
 void UFLGameplayAbility_PlayMontage::ApplySelfEffects()
@@ -107,6 +176,11 @@ void UFLGameplayAbility_PlayMontage::ApplySelfEffects()
 
 void UFLGameplayAbility_PlayMontage::OnAttackMontageCompleted()
 {
+	if (!IsActive())
+	{
+		return;
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("Montage Completed!!"));
 
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
@@ -114,6 +188,11 @@ void UFLGameplayAbility_PlayMontage::OnAttackMontageCompleted()
 
 void UFLGameplayAbility_PlayMontage::OnAttackMontageInterrupted()
 {
+	if (!IsActive())
+	{
+		return;
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("Montage Interrupted!!"));
 
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
@@ -121,7 +200,86 @@ void UFLGameplayAbility_PlayMontage::OnAttackMontageInterrupted()
 
 void UFLGameplayAbility_PlayMontage::OnAttackMontageCancelled()
 {
+	if (!IsActive())
+	{
+		return;
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("Montage Cancelled!!"));
 
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+}
+
+void UFLGameplayAbility_PlayMontage::OnAttackMontageBlendOut()
+{
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("PlayMontage Ability: OnBlendOut")
+	);
+
+	if (!IsActive())
+	{
+		return;
+	}
+
+	EndAbility(
+		CurrentSpecHandle,
+		CurrentActorInfo,
+		CurrentActivationInfo,
+		false,
+		false
+	);
+}
+
+void UFLGameplayAbility_PlayMontage::EndAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility,
+	bool bWasCancelled
+)
+{
+	UAbilitySystemComponent* ASC =
+		GetAbilitySystemComponentFromActorInfo();
+
+	const FGameplayTag HitReactTag =
+		FGameplayTag::RequestGameplayTag(
+			TEXT("State.HitReact"),
+			false
+		);
+
+	const int32 BeforeCount =
+		ASC && HitReactTag.IsValid()
+		? ASC->GetGameplayTagCount(HitReactTag)
+		: -1;
+
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("PlayMontage EndAbility / Tag count before: %d"),
+		BeforeCount
+	);
+
+	Super::EndAbility(
+		Handle,
+		ActorInfo,
+		ActivationInfo,
+		bReplicateEndAbility,
+		bWasCancelled
+	);
+
+	const int32 AfterCount =
+		ASC && HitReactTag.IsValid()
+		? ASC->GetGameplayTagCount(HitReactTag)
+		: -1;
+
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("PlayMontage EndAbility / Tag count after: %d"),
+		AfterCount
+	);
+
+	MontageTask = nullptr;
 }

@@ -9,6 +9,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
 #include "BrainComponent.h"
+#include "AbilitySystemComponent.h"
+#include "GAS/FLAttributeSet.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 AFLCharacterMonster::AFLCharacterMonster()
 {
@@ -27,6 +30,19 @@ AFLCharacterMonster::AFLCharacterMonster()
 void AFLCharacterMonster::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->SetNumericAttributeBase(
+			UFLAttributeSet::GetMaxHealthAttribute(),
+			InitialHealth
+		);
+
+		AbilitySystemComponent->SetNumericAttributeBase(
+			UFLAttributeSet::GetHealthAttribute(),
+			InitialHealth
+		);
+	}
 
 	if (HealthBarWidgetComponent)
 	{
@@ -53,14 +69,32 @@ void AFLCharacterMonster::Die()
 		HealthBarWidgetComponent->SetVisibility(false);
 	}
 
-	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	AAIController* AIController =
+		Cast<AAIController>(GetController());
+
+	if (AIController)
 	{
-		if (UBrainComponent* BrainComponent = AIController->GetBrainComponent())
+		// 이동 요청 취소
+		AIController->StopMovement();
+
+		// 타깃을 바라보는 Focus 해제
+		AIController->ClearFocus(EAIFocusPriority::Gameplay);
+		AIController->ClearFocus(EAIFocusPriority::Default);
+
+		// Blackboard 타깃 제거
+		if (UBlackboardComponent* BB =
+			AIController->GetBlackboardComponent())
 		{
-			BrainComponent->StopLogic(TEXT("Monster Dead"));
+			BB->ClearValue(TEXT("Target"));
+			BB->SetValueAsBool(TEXT("IsDead"), true);
 		}
 
-		AIController->StopMovement();
+		if (UBrainComponent* BrainComponent =
+			AIController->GetBrainComponent())
+		{
+			// BTTask에서 종료하도록 
+			//BrainComponent->StopLogic(TEXT("Monster Dead"));
+		}
 	}
 
 	SetLifeSpan(DestroyDelayAfterDeath);

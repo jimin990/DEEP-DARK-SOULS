@@ -33,4 +33,12 @@ protected:
 public:
 	void ShowHealthBar();
 	void HideHealthBar();
+
+protected:
+	UPROPERTY(
+		EditDefaultsOnly,
+		BlueprintReadOnly,
+		Category = "Attributes"
+	)
+	float InitialHealth = 30.f;
 };

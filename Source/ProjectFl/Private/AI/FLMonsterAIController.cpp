@@ -8,6 +8,7 @@
 #include "Perception/AISenseConfig_Sight.h"
 #include "Perception/AISenseConfig_Damage.h"
 #include "Characters/FLCharacterMonster.h"
+#include "Characters/FLCharacterBase.h"
 
 AFLMonsterAIController::AFLMonsterAIController()
 {
@@ -36,10 +37,10 @@ void AFLMonsterAIController::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (BehaviorTreeAsset)
+    /*if (BehaviorTreeAsset)
     {
         RunBehaviorTree(BehaviorTreeAsset);
-    }
+    }*/
 
 	AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(
 		this,
@@ -94,6 +95,11 @@ void AFLMonsterAIController::OnTargetPerceptionUpdated(
             Monster->ShowHealthBar();
         }
 
+        SetFocus(
+            Actor,
+            EAIFocusPriority::Gameplay
+        );
+
         UE_LOG(
             LogTemp,
             Warning,
@@ -115,4 +121,35 @@ void AFLMonsterAIController::OnTargetPerceptionUpdated(
             *Actor->GetName()
         );
     }
+}
+
+void AFLMonsterAIController::OnPossess(APawn* InPawn)
+{
+    Super::OnPossess(InPawn);
+
+    AFLCharacterBase* FLCharacter =
+        Cast<AFLCharacterBase>(InPawn);
+
+    if (!FLCharacter)
+    {
+        return;
+    }
+
+    // 먼저 BT를 실행해서 BrainComponent를 활성화한다.
+    if (BehaviorTreeAsset)
+    {
+        const bool bStarted =
+            RunBehaviorTree(BehaviorTreeAsset);
+
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("%s BehaviorTree started: %s"),
+            *GetNameSafe(FLCharacter),
+            bStarted ? TEXT("true") : TEXT("false")
+        );
+    }
+
+    // 이제 Character의 GetController()가 확실히 유효하다.
+    FLCharacter->PlaySpawnAnimation();
 }

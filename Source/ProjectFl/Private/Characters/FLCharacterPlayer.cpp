@@ -121,6 +121,8 @@ void AFLCharacterPlayer::BeginPlay()
 			InventoryComponent->ApplyEquippedWeaponToCharacter(this);
 		}
 	}
+
+	PlaySpawnAnimation();
 }
 
 void AFLCharacterPlayer::Look(const FInputActionValue& Value)

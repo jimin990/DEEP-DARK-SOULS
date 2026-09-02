@@ -109,6 +109,8 @@ void UFLBTService_UpdateAIState::TickNode(
 
     BB->SetValueAsFloat(DistanceKey.SelectedKeyName, Distance);
 
+    UE_LOG(LogTemp, Warning, TEXT("Distance %f"), Distance);
+
     const EFLAIState NewState =
         Distance <= CombatRange
         ? EFLAIState::Combat

@@ -86,7 +86,19 @@ public:
 	// Á×À½ Ã³¸®
     virtual void Die();
 
+	void PlaySpawnAnimation();
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	bool bIsDead = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn")
+	TObjectPtr<UAnimMontage> SpawnMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn")
+	bool bPlayingSpawnAnimation = false;
+
+	void OnSpawnMontageEnded(UAnimMontage* Montage,bool bInterrupted);
+
+	void FinishSpawnAnimation();
 };

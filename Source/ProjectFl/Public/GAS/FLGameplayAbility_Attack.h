@@ -6,25 +6,38 @@
 #include "Abilities/GameplayAbility.h"
 #include "FLGameplayAbility_Attack.generated.h"
 
-class UGameplayEffect;
-class UAbilityTask_WaitGameplayEvent;
-class UAbilityTask_PlayMontageAndWait;
 class AFLCharacterBase;
+class UAbilityTask_PlayMontageAndWait;
+class UAbilityTask_WaitGameplayEvent;
 
 UCLASS()
 class PROJECTFL_API UFLGameplayAbility_Attack : public UGameplayAbility
 {
 	GENERATED_BODY()
-	
-	UFLGameplayAbility_Attack();
 
 public:
+	UFLGameplayAbility_Attack();
+
 	virtual void ActivateAbility(
-		const FGameplayAbilitySpecHandle Handle,
+		FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo,
+		FGameplayAbilityActivationInfo ActivationInfo,
 		const FGameplayEventData* TriggerEventData
 	) override;
+
+	virtual void EndAbility(
+		FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		FGameplayAbilityActivationInfo ActivationInfo,
+		bool bReplicateEndAbility,
+		bool bWasCancelled
+	) override;
+
+	void ApplyDamageEffectToTarget(AActor* TargetActor);
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combo")
+	bool bAutoContinueComboForAI = true;
 
 private:
 	UPROPERTY()
@@ -32,32 +45,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UAbilityTask_WaitGameplayEvent> TraceEventTask;
-
-	UPROPERTY()
-	TObjectPtr<UAbilityTask_PlayMontageAndWait> MontageTask;
-
-	UFUNCTION()
-	void AttackTrace(FGameplayEventData Payload);
-
-	UFUNCTION()
-	void OnAttackMontageCompleted();
-
-	UFUNCTION()
-	void OnAttackMontageInterrupted();
-
-	UFUNCTION()
-	void OnAttackMontageCancelled();
-
-public:
-	void ApplyDamageEffectToTarget(AActor* TargetActor);
-
-	//ComboSystem
-public:
-	int32 ComboIndex = 0;
-
-	bool bCanReceiveComboInput = false;
-	bool bComboInputBuffered = false;
-	bool bChangingComboMontage = false;
 
 	UPROPERTY()
 	TObjectPtr<UAbilityTask_WaitGameplayEvent> ComboInputTask;
@@ -68,7 +55,26 @@ public:
 	UPROPERTY()
 	TObjectPtr<UAbilityTask_WaitGameplayEvent> ComboCloseTask;
 
+	UPROPERTY()
+	TObjectPtr<UAbilityTask_PlayMontageAndWait> MontageTask;
+
+	int32 ComboIndex = 0;
+	bool bCanReceiveComboInput = false;
+
+private:
 	void PlayComboMontage();
+	void SetupTraceEventTask(const FGameplayTag& TraceEventTag);
+	void UnbindMontageTaskDelegates();
+	void RequestNextComboForAI();
+	void ApplyAttackDirection(AFLCharacterBase* InCharacter);
+
+	void ReportDamageToPerception(
+		AActor* TargetActor,
+		float DamageAmount
+	);
+
+	UFUNCTION()
+	void AttackTrace(FGameplayEventData Payload);
 
 	UFUNCTION()
 	void OnComboInput(FGameplayEventData Payload);
@@ -79,12 +85,12 @@ public:
 	UFUNCTION()
 	void OnComboWindowClose(FGameplayEventData Payload);
 
-	// 콤보 공격중 방향 지정
-	void ApplyAttackDirection(AFLCharacterBase* InCharacter);
+	UFUNCTION()
+	void OnAttackMontageCompleted();
 
-	// Sense에게 데미지 알리기 
-	void ReportDamageToPerception(
-		AActor* TargetActor,
-		float DamageAmount
-	);
+	UFUNCTION()
+	void OnAttackMontageInterrupted();
+
+	UFUNCTION()
+	void OnAttackMontageCancelled();
 };

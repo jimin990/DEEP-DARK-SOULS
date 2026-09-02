@@ -7,56 +7,69 @@
 #include "FLBossRoomTrigger.generated.h"
 
 class UBoxComponent;
+class USceneComponent;
 class USoundBase;
-class UAudioComponent;
+class AFLCharacterBoss;
+class ATargetPoint;
 
 UCLASS()
 class PROJECTFL_API AFLBossRoomTrigger : public AActor
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    AFLBossRoomTrigger();
+	AFLBossRoomTrigger();
 
 protected:
-    virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
-protected:
-    UPROPERTY(VisibleAnywhere)
-    TObjectPtr<UBoxComponent> BoxComponent;
+	UPROPERTY(VisibleAnywhere, Category = "Boss Room")
+	TObjectPtr<UBoxComponent> BoxComponent;
 
-    UPROPERTY(EditInstanceOnly, Category = "Boss")
-    TObjectPtr<AActor> BossActor;
+	// 스폰할 보스 BP 클래스
+	UPROPERTY(EditAnywhere, Category = "Boss Room|Spawn")
+	TSubclassOf<AFLCharacterBoss> BossClass;
 
-    UPROPERTY(EditAnywhere, Category = "Boss")
-    bool bHideWhenExit = false;
+	// 실제로 생성된 보스
+	UPROPERTY(Transient)
+	TObjectPtr<AFLCharacterBoss> SpawnedBoss;
+
+	UPROPERTY(EditAnywhere, Category = "Boss Room")
+	bool bHideWhenExit = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Room|Sound")
+	TObjectPtr<USoundBase> BossBGM;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Room|Sound")
+	float BGMFadeInTime = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Room|Sound")
+	float BGMVolume = 1.f;
 
 private:
-    UFUNCTION()
-    void OnBoxBeginOverlap(
-        UPrimitiveComponent* OverlappedComponent,
-        AActor* OtherActor,
-        UPrimitiveComponent* OtherComp,
-        int32 OtherBodyIndex,
-        bool bFromSweep,
-        const FHitResult& SweepResult
-    );
+	bool bBossSpawned = false;
 
-    UFUNCTION()
-    void OnBoxEndOverlap(
-        UPrimitiveComponent* OverlappedComponent,
-        AActor* OtherActor,
-        UPrimitiveComponent* OtherComp,
-        int32 OtherBodyIndex
-    );
+	AFLCharacterBoss* SpawnBoss();
 
-public:
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Room|Sound")
-    TObjectPtr<USoundBase> BossBGM;
+	UFUNCTION()
+	void OnBoxBeginOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Room|Sound")
-    float BGMFadeInTime = 1.f;
+	UFUNCTION()
+	void OnBoxEndOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex
+	);
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Room|Sound")
-    float BGMVolume = 1.f;
+	// 월드에 배치한 TargetPoint를 지정
+	UPROPERTY(EditInstanceOnly, Category = "Boss Room|Spawn")
+	TObjectPtr<ATargetPoint> BossSpawnPoint;
 };

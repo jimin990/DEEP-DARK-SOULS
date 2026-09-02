@@ -12,6 +12,10 @@
 #include "Weapons/FLWeaponDataAsset.h"
 #include "Combat/FLCombatComponent.h"
 #include "Combat/FLAbilitySetPrimaryDataAsset.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "AIController.h"
+#include "BrainComponent.h"
 
 // Sets default values
 AFLCharacterBase::AFLCharacterBase()
@@ -58,6 +62,8 @@ void AFLCharacterBase::BeginPlay()
 
 	// ÀÌÆåÆ® ºÎ¿©
 	ApplyStartupEffects();
+
+	//PlaySpawnAnimation();
 }
 
 // Called every frame
@@ -187,3 +193,102 @@ void AFLCharacterBase::Die()
 	UE_LOG(LogTemp, Warning, TEXT("%s Die"), *GetName());
 }
 
+void AFLCharacterBase::PlaySpawnAnimation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s Anime1"), *GetName());
+
+	if (!SpawnMontage || !GetMesh())
+	{
+		FinishSpawnAnimation();
+		return;
+	}
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (!AnimInstance)
+	{
+		FinishSpawnAnimation();
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s Anime2"), *GetName());
+
+	bPlayingSpawnAnimation = true;
+
+	if (UCharacterMovementComponent* MovementComp =
+		GetCharacterMovement())
+	{
+		MovementComp->DisableMovement();
+	}
+
+	if (AAIController* AIController =
+		Cast<AAIController>(GetController()))
+	{
+		AIController->StopMovement();
+
+		if (UBrainComponent* BrainComponent =
+			AIController->GetBrainComponent())
+		{
+			BrainComponent->PauseLogic(TEXT("Playing spawn animation"));
+		}
+	}
+
+	FOnMontageEnded MontageEndedDelegate;
+	MontageEndedDelegate.BindUObject(
+		this,
+		&AFLCharacterBase::OnSpawnMontageEnded
+	);
+
+	//AnimInstance->Montage_Play(SpawnMontage);
+
+	GetMesh()->SetVisibility(false, true);
+
+	AnimInstance->Montage_Play(SpawnMontage);
+
+	GetWorldTimerManager().SetTimerForNextTick(
+		FTimerDelegate::CreateWeakLambda(this, [this]()
+			{
+				if (USkeletalMeshComponent* MeshComponent = GetMesh())
+				{
+					MeshComponent->SetVisibility(true, true);
+				}
+			})
+	);
+
+	AnimInstance->Montage_SetEndDelegate(
+		MontageEndedDelegate,
+		SpawnMontage
+	);
+}
+
+void AFLCharacterBase::OnSpawnMontageEnded(
+	UAnimMontage* Montage,
+	bool bInterrupted)
+{
+	FinishSpawnAnimation();
+	UE_LOG(LogTemp, Warning, TEXT("%s Anime3"), *GetName());
+}
+
+void AFLCharacterBase::FinishSpawnAnimation()
+{
+	bPlayingSpawnAnimation = false;
+
+	if (UCharacterMovementComponent* MovementComp =
+		GetCharacterMovement())
+	{
+		MovementComp->SetMovementMode(MOVE_Walking);
+	}
+
+	if (AAIController* AIController =
+		Cast<AAIController>(GetController()))
+	{
+		if (UBrainComponent* BrainComponent =
+			AIController->GetBrainComponent())
+		{
+			BrainComponent->ResumeLogic(TEXT("Spawn animation finished"));
+			UE_LOG(LogTemp, Warning, TEXT("%s Anime4"), *GetName());
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s Anime5"), *GetName());
+}

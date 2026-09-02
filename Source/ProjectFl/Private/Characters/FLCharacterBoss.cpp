@@ -14,11 +14,22 @@ AFLCharacterBoss::AFLCharacterBoss()
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+
+	GetCharacterMovement()->MaxWalkSpeed = 400.f;
+
+	GetMesh()->VisibilityBasedAnimTickOption =
+		EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 }
 
 void AFLCharacterBoss::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("Boss Spawn!!sss")
+	);
 }
 
 void AFLCharacterBoss::Die()
