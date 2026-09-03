@@ -24,7 +24,7 @@ DEEP DARK SOULS은 **GAS 기반 플레이어 전투 시스템과 AI Perception �
 | 언어 | C++ / Blueprint |
 | 장르 | 소울라이크 |
 | 개발 환경 | Visual Studio 2022 |
-| 영상 | [YouTube 영상](영상 링크) |
+| 영상 | [DEEP DARK SOULS 플레이 영상](https://www.youtube.com/watch?v=zLzBPnQiCZU) |
 
 ## 기술 스택
 
