@@ -1,6 +1,6 @@
 # Deep Dark Soul
 
-> Unreal Engine 5와 Gameplay Ability System을 활용한 3인칭 액션 RPG 전투 프로젝트
+> Unreal Engine 5와 Gameplay Ability System을 활용한 3인칭 액션 RPG 전투 게임
 
 <p align="center">
  <img width="800" height="450" alt="보스방진입장면" src="https://github.com/user-attachments/assets/45f9eb48-c452-49ae-8814-874216bb79c4" alt="Deep Dark Soul 대표 이미지">
@@ -26,6 +26,21 @@ Deep Dark Soul은 **GAS 기반 플레이어 전투 시스템과 AI Perception �
 | 개발 환경 | Visual Studio 2022 |
 | 영상 | [YouTube 영상](영상 링크) |
 
+## 기술 스택
+
+- Unreal Engine 5.7
+- C++
+- Blueprint
+- Gameplay Ability System
+- Gameplay Tags / Gameplay Effects / Gameplay Events
+- Enhanced Input
+- Behavior Tree / Blackboard
+- AI Perception
+- Environment Query System
+- Animation Montage / AnimNotifyState
+- UMG / Slate
+- Niagara
+
 ## 핵심 목표
 
 - Gameplay Ability System을 활용한 확장 가능한 전투 구조
@@ -34,6 +49,7 @@ Deep Dark Soul은 **GAS 기반 플레이어 전투 시스템과 AI Perception �
 - AI Perception, Behavior Tree, EQS를 연계한 전투 AI
 - Gameplay Event를 이용한 애니메이션과 공격 판정 동기화
 - 컴포넌트와 델리게이트를 이용한 역할 분리
+
 
 ## 주요 기능
 
@@ -312,21 +328,6 @@ AFLCharacterBoss
 AFLPlayerState
 └─ FLInventoryComponent
 ```
-
-## 기술 스택
-
-- Unreal Engine 5.7
-- C++
-- Blueprint
-- Gameplay Ability System
-- Gameplay Tags / Gameplay Effects / Gameplay Events
-- Enhanced Input
-- Behavior Tree / Blackboard
-- AI Perception
-- Environment Query System
-- Animation Montage / AnimNotifyState
-- UMG / Slate
-- Niagara
 
 ## 프로젝트에서 배운 점
 
