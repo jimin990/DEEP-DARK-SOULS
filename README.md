@@ -1,14 +1,14 @@
-# ProjectFL
+# Deep Dark Soul
 
 > Unreal Engine 5와 Gameplay Ability System을 활용한 3인칭 액션 RPG 전투 프로젝트
 
 <p align="center">
- <img width="800" height="450" alt="보스방진입장면" src="https://github.com/user-attachments/assets/45f9eb48-c452-49ae-8814-874216bb79c4" alt="ProjectFL 대표 이미지">
+ <img width="800" height="450" alt="보스방진입장면" src="https://github.com/user-attachments/assets/45f9eb48-c452-49ae-8814-874216bb79c4" alt="Deep Dark Soul 대표 이미지">
 </p>
 
 ## 프로젝트 소개
 
-ProjectFL은 **GAS 기반 플레이어 전투 시스템과 AI Perception 기반 적 AI 구현**을 목표로 제작한 3인칭 액션 RPG 프로젝트입니다.
+Deep Dark Soul은 **GAS 기반 플레이어 전투 시스템과 AI Perception 기반 적 AI 구현**을 목표로 제작한 3인칭 액션 RPG 프로젝트입니다.
 
 공격, 회피, 회복, 피격, 사망 등의 행동을 Gameplay Ability로 구성했으며, 플레이어와 몬스터가 공통 Ability를 재사용할 수 있도록 설계했습니다.
 
