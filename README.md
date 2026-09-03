@@ -22,7 +22,7 @@ Deep Dark Soul은 **GAS 기반 플레이어 전투 시스템과 AI Perception �
 | 개발 기간 | 2026.08.18 ~ 2026.09.03 |
 | 엔진 | Unreal Engine 5.7 |
 | 언어 | C++ / Blueprint |
-| 장르 | 3인칭 액션 RPG |
+| 장르 | 소울라이크 |
 | 개발 환경 | Visual Studio 2022 |
 | 영상 | [YouTube 영상](영상 링크) |
 
