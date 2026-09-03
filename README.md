@@ -3,7 +3,7 @@
 > Unreal Engine 5와 Gameplay Ability System을 활용한 3인칭 액션 RPG 전투 프로젝트
 
 <p align="center">
-  <img src="Docs/Images/ProjectFL_Main.png" width="800" alt="ProjectFL 대표 이미지">
+ <img width="800" height="450" alt="보스방진입장면" src="https://github.com/user-attachments/assets/45f9eb48-c452-49ae-8814-874216bb79c4" alt="ProjectFL 대표 이미지">
 </p>
 
 ## 프로젝트 소개
@@ -343,20 +343,9 @@ AFLPlayerState
 - 적대 진영 기반 공격 대상 필터링
 - Weapon Data 유효성 검증 강화
 - AI 타깃 기억 및 해제 정책 개선
-- 입력 Action과 Ability Tag의 완전한 데이터 기반 매핑
 - UI 델리게이트 재바인딩 및 수명 관리 강화
 - Native Gameplay Tag를 통한 태그 중앙화
 - 자동화 테스트 및 Data Validation 추가
-
-## 실행 방법
-
-1. Unreal Engine 5.7을 설치합니다.
-2. 저장소를 Clone합니다.
-3. `ProjectFl.uproject`를 실행합니다.
-4. 필요한 경우 Generate Visual Studio Project Files를 실행합니다.
-5. 에디터에서 프로젝트를 빌드합니다.
-
-> 본 저장소에는 라이선스 및 용량 문제로 일부 외부 애셋이 포함되지 않을 수 있습니다.
 
 ## 사용 애셋
 
@@ -367,10 +356,3 @@ AFLPlayerState
 - VFX Asset:
 - Sound Asset:
 - Environment Asset:
-
-## 개발자
-
-**김지민**
-
-- GitHub: [jimin990](https://github.com/jimin990)
-- Email: wlals3236@naver.com
